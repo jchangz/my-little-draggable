@@ -1,11 +1,12 @@
-import { RefObject, useEffect, useRef } from "react";
+import { RefObject, useState, useEffect, useRef } from "react";
 
 export function useGridProps(ref: RefObject<HTMLDivElement>) {
   const gridColumnWidth = useRef(0);
   const gridRowHeights = useRef<Array<Array<number>>>([]);
   const gridOffsetFromTop = useRef(0);
   const gridGap = useRef({ x: 0, y: 0 });
-  const gridMaxColumns = useRef(0);
+  const maxRows = useRef(0);
+  const [maxCols, setMaxCols] = useState(0);
 
   useEffect(() => {
     // Used to find the height of all grid items per row
@@ -50,8 +51,11 @@ export function useGridProps(ref: RefObject<HTMLDivElement>) {
       }
 
       const rowHeights = Object.values(rowData);
-      gridRowHeights.current = rowHeights;
-      gridMaxColumns.current = rowHeights[0].length;
+      gridRowHeights.current = [].concat(...rowHeights);
+      maxRows.current = Math.ceil(
+        imgElementArray.length / rowHeights[0].length
+      );
+      setMaxCols(rowHeights[0].length);
     }
   }, [ref]);
 
@@ -59,7 +63,8 @@ export function useGridProps(ref: RefObject<HTMLDivElement>) {
     gridColumnWidth,
     gridOffsetFromTop,
     gridRowHeights,
-    gridMaxColumns,
     gridGap,
+    maxRows,
+    maxCols,
   };
 }
