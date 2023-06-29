@@ -25,7 +25,7 @@ function App() {
   let order = [1, 2, 3, 4, 5, 6].map((...[, index]) => index);
 
   const getNewMaxHeights = (order: Array<number>) => {
-    const rowHeightObj: RowData = {};
+    const rowHeightObj: { [id: number]: number } = {};
 
     order.forEach((val, i) => {
       const rowNum = Math.ceil((i + 1) / maxCols);
@@ -44,25 +44,24 @@ function App() {
 
   let currentMaxHeightPerRow: Array<number> = [];
   let currentIndexPosition = 0;
+  let currentRow = 0;
+  let currentCol = 0;
   const offsetTopOfRows = new Array(maxRows.current).fill(
     gridOffsetFromTop.current
   );
 
   const bind = useDrag(
     ({ args: [originalIndex], down, active, first, movement: [mx, my] }) => {
-      if (down && mx === 0 && my === 0) thisIndex = originalIndex;
-
       if (first) {
         currentIndexPosition = order.indexOf(originalIndex);
         currentMaxHeightPerRow = getNewMaxHeights(order);
-      }
+        currentRow = Math.floor(currentIndexPosition / maxCols);
+        currentCol = currentIndexPosition % maxCols;
 
-      const currentRow = Math.floor(currentIndexPosition / maxCols);
-      const currentCol = currentIndexPosition % maxCols;
-
-      for (let i = 1; i < maxRows.current; i += 1) {
-        offsetTopOfRows[i] =
-          offsetTopOfRows[i - 1] + currentMaxHeightPerRow[i - 1];
+        for (let i = 1; i < maxRows.current; i += 1) {
+          offsetTopOfRows[i] =
+            offsetTopOfRows[i - 1] + currentMaxHeightPerRow[i - 1];
+        }
       }
     },
     {
