@@ -1,7 +1,8 @@
-import { useState, useRef, useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useSprings, a } from "@react-spring/web";
 import { useDrag } from "@use-gesture/react";
 import { useGridProps } from "./helpers/useGridProps";
+import { useCalculations } from "./helpers/useCalculations";
 import "./App.css";
 
 function App() {
@@ -16,6 +17,14 @@ function App() {
     maxRows,
     maxCols,
   } = useGridProps(containerRef);
+  const { currentMaxHeightPerRow, offsetTopOfRows, calcNewOffsetTopOfRows } =
+    useCalculations({
+      order,
+      maxCols,
+      maxRows,
+      gridRowHeights,
+      gridOffsetFromTop,
+    });
   const [springs, api] = useSprings(numberOfItems, () => ({
     x: 0,
     y: 0,
@@ -29,44 +38,19 @@ function App() {
     setOrder(arr);
   }, []);
 
-  const getNewMaxHeights = (order: Array<number>) => {
-    const rowHeightObj: { [id: number]: number } = {};
-
-    order.forEach((val, i) => {
-      const rowNum = Math.ceil((i + 1) / maxCols);
-      if (!rowHeightObj[rowNum])
-        rowHeightObj[rowNum] = gridRowHeights.current[val];
-      else {
-        if (gridRowHeights.current[val] > rowHeightObj[rowNum]) {
-          rowHeightObj[rowNum] = gridRowHeights.current[val];
-        }
-      }
-    });
-
-    const arr: Array<number> = Object.values(rowHeightObj);
-    return arr;
-  };
-
-  let currentMaxHeightPerRow: Array<number> = [];
+  // Variables that get reassigned on first drag move
   let currentIndexPosition = 0;
   let currentRow = 0;
   let currentCol = 0;
-  const offsetTopOfRows = new Array(maxRows.current).fill(
-    gridOffsetFromTop.current
-  );
 
   const bind = useDrag(
     ({ args: [originalIndex], down, active, first, movement: [mx, my] }) => {
       if (first) {
         currentIndexPosition = order.indexOf(originalIndex);
-        currentMaxHeightPerRow = getNewMaxHeights(order);
         currentRow = Math.floor(currentIndexPosition / maxCols);
         currentCol = currentIndexPosition % maxCols;
 
-        for (let i = 1; i < maxRows.current; i += 1) {
-          offsetTopOfRows[i] =
-            offsetTopOfRows[i - 1] + currentMaxHeightPerRow[i - 1];
-        }
+        calcNewOffsetTopOfRows();
       }
     },
     {
