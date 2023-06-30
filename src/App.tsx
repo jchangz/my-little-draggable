@@ -1,10 +1,12 @@
-import { useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useSprings, a } from "@react-spring/web";
 import { useDrag } from "@use-gesture/react";
 import { useGridProps } from "./helpers/useGridProps";
 import "./App.css";
 
 function App() {
+  const numberOfItems = 6;
+  const [order, setOrder] = useState<Array<number>>([]);
   const containerRef = useRef<HTMLDivElement>(null);
   const {
     gridColumnWidth,
@@ -14,7 +16,7 @@ function App() {
     maxRows,
     maxCols,
   } = useGridProps(containerRef);
-  const [springs, api] = useSprings(6, () => ({
+  const [springs, api] = useSprings(numberOfItems, () => ({
     x: 0,
     y: 0,
     opacity: 0,
@@ -22,7 +24,10 @@ function App() {
     zIndex: 0,
   }));
 
-  let order = [1, 2, 3, 4, 5, 6].map((...[, index]) => index);
+  useEffect(() => {
+    const arr = new Array(numberOfItems).fill(0).map((...[, i]) => i);
+    setOrder(arr);
+  }, []);
 
   const getNewMaxHeights = (order: Array<number>) => {
     const rowHeightObj: { [id: number]: number } = {};
