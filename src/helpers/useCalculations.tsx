@@ -1,9 +1,11 @@
 import { useEffect, useRef } from "react";
+import { clamp } from "lodash";
 
 export function useCalculations({
   order,
   maxCols,
   maxRows,
+  gridColumnWidth,
   gridRowHeights,
   gridOffsetFromTop,
 }) {
@@ -39,9 +41,61 @@ export function useCalculations({
     }
   };
 
+  const calcNewCol = ({
+    currentCol,
+    mx,
+  }: {
+    currentCol: number;
+    mx: number;
+  }) => {
+    return Math.abs(
+      clamp(
+        Math.round(mx / gridColumnWidth.current + currentCol),
+        0,
+        maxCols - 1
+      )
+    );
+  };
+
+  const calcNewRow = ({
+    originalIndex,
+    currentRow,
+    my,
+  }: {
+    originalIndex: number;
+    currentRow: number;
+    my: number;
+  }) => {
+    for (let i = 0; i < maxRows.current; i += 1) {
+      // Calculate and return the new row
+      if (
+        offsetTopOfRows.current[i + 1] &&
+        offsetTopOfRows.current[currentRow] + my <
+          offsetTopOfRows.current[i + 1] -
+            gridRowHeights.current[originalIndex] / 2
+      ) {
+        return i;
+      }
+    }
+    // When we are in the last row
+    return offsetTopOfRows.current.length - 1;
+  };
+
+  const calcNewIndex = ({
+    newCol,
+    newRow,
+  }: {
+    newCol: number;
+    newRow: number;
+  }) => {
+    return clamp(newRow * maxCols + newCol, 0, order.length - 1);
+  };
+
   return {
     currentMaxHeightPerRow,
-    offsetTopOfRows,
+    calcNewCol,
+    calcNewRow,
+    calcNewIndex,
     calcNewOffsetTopOfRows,
   };
 }

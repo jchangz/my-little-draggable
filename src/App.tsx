@@ -17,14 +17,20 @@ function App() {
     maxRows,
     maxCols,
   } = useGridProps(containerRef);
-  const { currentMaxHeightPerRow, offsetTopOfRows, calcNewOffsetTopOfRows } =
-    useCalculations({
-      order,
-      maxCols,
-      maxRows,
-      gridRowHeights,
-      gridOffsetFromTop,
-    });
+  const {
+    currentMaxHeightPerRow,
+    calcNewCol,
+    calcNewRow,
+    calcNewIndex,
+    calcNewOffsetTopOfRows,
+  } = useCalculations({
+    order,
+    maxCols,
+    maxRows,
+    gridColumnWidth,
+    gridRowHeights,
+    gridOffsetFromTop,
+  });
   const [springs, api] = useSprings(numberOfItems, () => ({
     x: 0,
     y: 0,
@@ -52,6 +58,10 @@ function App() {
 
         calcNewOffsetTopOfRows();
       }
+
+      const newCol = calcNewCol({ currentCol, mx });
+      const newRow = calcNewRow({ originalIndex, currentRow, my });
+      const newIndex = calcNewIndex({ newCol, newRow });
     },
     {
       bounds: containerRef,
