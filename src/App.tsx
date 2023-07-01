@@ -17,20 +17,15 @@ function App() {
     maxRows,
     maxCols,
   } = useGridProps(containerRef);
-  const {
-    currentMaxHeightPerRow,
-    calcNewCol,
-    calcNewRow,
-    calcNewIndex,
-    calcNewOffsetTopOfRows,
-  } = useCalculations({
-    order,
-    maxCols,
-    maxRows,
-    gridColumnWidth,
-    gridRowHeights,
-    gridOffsetFromTop,
-  });
+  const { calcNewCol, calcNewRow, calcNewIndex, calcNewOffsetTopOfRows } =
+    useCalculations({
+      order,
+      maxCols,
+      maxRows,
+      gridColumnWidth,
+      gridRowHeights,
+      gridOffsetFromTop,
+    });
   const [springs, api] = useSprings(numberOfItems, () => ({
     x: 0,
     y: 0,
@@ -48,6 +43,7 @@ function App() {
   let currentIndexPosition = 0;
   let currentRow = 0;
   let currentCol = 0;
+  let thisIndex = 0;
 
   const bind = useDrag(
     ({ args: [originalIndex], down, active, first, movement: [mx, my] }) => {
@@ -55,6 +51,7 @@ function App() {
         currentIndexPosition = order.indexOf(originalIndex);
         currentRow = Math.floor(currentIndexPosition / maxCols);
         currentCol = currentIndexPosition % maxCols;
+        thisIndex = currentIndexPosition;
 
         calcNewOffsetTopOfRows();
       }
@@ -62,6 +59,10 @@ function App() {
       const newCol = calcNewCol({ currentCol, mx });
       const newRow = calcNewRow({ originalIndex, currentRow, my });
       const newIndex = calcNewIndex({ newCol, newRow });
+
+      if (thisIndex !== newIndex) {
+        thisIndex = newIndex;
+      }
     },
     {
       bounds: containerRef,
