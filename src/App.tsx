@@ -23,6 +23,8 @@ function App() {
     calcNewIndex,
     calcNewOffsetTopOfRows,
     setNewPosition,
+    setXCoordinates,
+    setYCoordinates,
     getNewPosition,
     getTempPosition,
   } = useCalculations({
@@ -68,6 +70,17 @@ function App() {
       const newIndex = calcNewIndex({ newCol, newRow });
 
       if (thisIndex !== newIndex) {
+        setXCoordinates({
+          currentIndexPosition,
+          newIndex,
+          currentCol,
+          newCol,
+          currentRow,
+          newRow,
+        });
+        if (newRow !== currentRow)
+          setYCoordinates({ currentIndexPosition, newIndex });
+
         thisIndex = newIndex;
       }
     },
