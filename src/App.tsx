@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { useSprings, a } from "@react-spring/web";
 import { useDrag } from "@use-gesture/react";
 import { swap } from "./helpers/swap";
@@ -8,7 +8,9 @@ import "./App.css";
 
 function App() {
   const numberOfItems = 10;
-  const [order, setOrder] = useState<Array<number>>([]);
+  const [order, setOrder] = useState<Array<number>>(
+    new Array(numberOfItems).fill(0).map((...[, i]) => i)
+  );
   const containerRef = useRef<HTMLDivElement>(null);
   const {
     gridColumnWidth,
@@ -19,12 +21,12 @@ function App() {
     maxCols,
   } = useGridProps(containerRef);
   const {
+    newCoordinates,
+    tempCoordinates,
     calcNewIndex,
     initializeData,
     setCoordinates,
     setNewPosition,
-    getNewPosition,
-    getTempPosition,
   } = useCalculations({
     order,
     maxCols,
@@ -40,11 +42,6 @@ function App() {
     shadow: 0,
     zIndex: 0,
   }));
-
-  useEffect(() => {
-    const arr = new Array(numberOfItems).fill(0).map((...[, i]) => i);
-    setOrder(arr);
-  }, []);
 
   // Variables that get reassigned on first drag move
   let currentIndexPosition = 0;
@@ -68,11 +65,11 @@ function App() {
 
       api.start((index) => ({
         x:
-          getNewPosition(index).x +
-          (down && index === originalIndex ? mx : getTempPosition(index).x),
+          newCoordinates[index].x +
+          (down && index === originalIndex ? mx : tempCoordinates[index].x),
         y:
-          getNewPosition(index).y +
-          (down && index === originalIndex ? my : getTempPosition(index).y),
+          newCoordinates[index].y +
+          (down && index === originalIndex ? my : tempCoordinates[index].y),
         shadow: down && index === originalIndex ? 15 : 0,
         zIndex: down && index === originalIndex ? 99 : 0,
         immediate: index === originalIndex ? down : false,

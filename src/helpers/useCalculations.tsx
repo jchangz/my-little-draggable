@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import { clamp, range } from "lodash";
 import { swap } from "./swap";
 
@@ -21,20 +21,22 @@ export function useCalculations({
   gridRowHeights,
   gridOffsetFromTop,
 }) {
+  const [newCoordinates, setNewCoordinates] = useState<Array<object>>(
+    new Array(order.length).fill(0).map(() => ({ x: 0, y: 0 }))
+  );
+  const tempCoordinates = new Array(order.length)
+    .fill(0)
+    .map(() => ({ x: 0, y: 0 }));
   const currentMaxHeightPerRow = useRef<Array<number>>([]);
   const currentRowBottom = useRef<Array<number>>([]);
   const offsetTopOfRows = useRef<Array<number>>([]);
-  const tempPosition = useRef<Array<object>>([]);
   const newPosition = useRef<Array<object>>([]);
-  let currentCol = 0;
-  let newCol = 0;
-  let currentRow = 0;
-  let newRow = 0;
+  let currentCol: number;
+  let newCol: number;
+  let currentRow: number;
+  let newRow: number;
 
   useEffect(() => {
-    tempPosition.current = new Array(order.length)
-      .fill(0)
-      .map(() => ({ x: 0, y: 0 }));
     newPosition.current = new Array(order.length)
       .fill(0)
       .map(() => ({ x: 0, y: 0 }));
@@ -90,22 +92,20 @@ export function useCalculations({
     }
   };
 
-  const getTempPosition = (index: number) => tempPosition.current[index];
-
-  const getNewPosition = (index: number) => newPosition.current[index];
-
   const setNewPosition = () => {
     for (let i = 0; i < newPosition.current.length; i += 1) {
-      newPosition.current[i].x += tempPosition.current[i].x;
-      newPosition.current[i].y += tempPosition.current[i].y;
+      newPosition.current[i].x += tempCoordinates[i].x;
+      newPosition.current[i].y += tempCoordinates[i].y;
     }
+    setNewCoordinates(newPosition.current);
     reset();
   };
 
   const reset = () => {
-    tempPosition.current = new Array(order.length)
-      .fill(0)
-      .map(() => ({ x: 0, y: 0 }));
+    tempCoordinates.forEach((v) => {
+      v.x = 0;
+      v.y = 0;
+    });
   };
 
   const getNewMaxHeights = (order: Array<number>) => {
@@ -130,8 +130,6 @@ export function useCalculations({
   };
 
   const setXCoordinates = ({ currentIndexPosition, newIndex }) => {
-    // Reset the staged coordinates
-    reset();
     // Find the indexes that need to be updated based on the from and to indexes
     const indexesToUpdate = range(newIndex, currentIndexPosition);
     // Check the direction we need to shift the indexes
@@ -143,7 +141,7 @@ export function useCalculations({
         const thisIndexRow = Math.floor(thisIndex / maxCols);
         if (direction > 0) {
           const shiftDown = !((thisIndex + 1) % maxCols);
-          tempPosition.current[order[thisIndex]] = {
+          tempCoordinates[order[thisIndex]] = {
             x: shiftDown
               ? -(maxCols - 1) * gridColumnWidth.current
               : gridColumnWidth.current,
@@ -151,7 +149,7 @@ export function useCalculations({
           };
         } else if (direction < 0) {
           const shiftUp = !(thisIndex % maxCols);
-          tempPosition.current[order[thisIndex]] = {
+          tempCoordinates[order[thisIndex]] = {
             x: shiftUp
               ? (maxCols - 1) * gridColumnWidth.current
               : -gridColumnWidth.current,
@@ -159,7 +157,7 @@ export function useCalculations({
           };
         }
       }
-      tempPosition.current[order[currentIndexPosition]] = {
+      tempCoordinates[order[currentIndexPosition]] = {
         x: (newCol - currentCol) * gridColumnWidth.current,
         y:
           newRow !== currentRow
@@ -186,13 +184,15 @@ export function useCalculations({
       if (heightDiff && i + 1 < currentMaxHeightPerRow.current.length) {
         for (let j = 0; j < indexSortedByRows[i + 1].length; j += 1) {
           // Add new height difference to each index in the row
-          tempPosition.current[indexSortedByRows[i + 1][j]].y += heightDiff;
+          tempCoordinates[indexSortedByRows[i + 1][j]].y += heightDiff;
         }
       }
     }
   };
 
   const setCoordinates = ({ currentIndexPosition, newIndex }) => {
+    // Reset the staged coordinates
+    reset();
     setXCoordinates({
       currentIndexPosition,
       newIndex,
@@ -248,11 +248,11 @@ export function useCalculations({
   };
 
   return {
+    newCoordinates,
+    tempCoordinates,
     calcNewIndex,
     initializeData,
     setCoordinates,
     setNewPosition,
-    getNewPosition,
-    getTempPosition,
   };
 }
