@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useSprings, a } from "@react-spring/web";
 import { useDrag } from "@use-gesture/react";
+import { swap } from "./helpers/swap";
 import { useGridProps } from "./helpers/useGridProps";
 import { useCalculations } from "./helpers/useCalculations";
 import "./App.css";
@@ -82,6 +83,22 @@ function App() {
           setYCoordinates({ currentIndexPosition, newIndex });
 
         thisIndex = newIndex;
+      }
+
+      api.start((index) => ({
+        x:
+          getNewPosition(index).x +
+          (down && index === originalIndex ? mx : getTempPosition(index).x),
+        y:
+          getNewPosition(index).y +
+          (down && index === originalIndex ? my : getTempPosition(index).y),
+        shadow: down && index === originalIndex ? 15 : 0,
+        zIndex: down && index === originalIndex ? 99 : 0,
+        immediate: index === originalIndex ? down : false,
+      }));
+      if (!active && currentIndexPosition !== newIndex) {
+        setNewPosition();
+        setOrder(swap(order, currentIndexPosition, newIndex));
       }
     },
     {
