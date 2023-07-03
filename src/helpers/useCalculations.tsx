@@ -26,6 +26,10 @@ export function useCalculations({
   const offsetTopOfRows = useRef<Array<number>>([]);
   const tempPosition = useRef<Array<object>>([]);
   const newPosition = useRef<Array<object>>([]);
+  let currentCol = 0;
+  let newCol = 0;
+  let currentRow = 0;
+  let newRow = 0;
 
   useEffect(() => {
     tempPosition.current = new Array(order.length)
@@ -68,6 +72,16 @@ export function useCalculations({
       []
     );
   }, [order, maxCols, gridRowHeights, gridOffsetFromTop]);
+
+  const initializeData = ({
+    currentIndexPosition,
+  }: {
+    currentIndexPosition: number;
+  }) => {
+    currentRow = Math.floor(currentIndexPosition / maxCols);
+    currentCol = currentIndexPosition % maxCols;
+    calcNewOffsetTopOfRows();
+  };
 
   const calcNewOffsetTopOfRows = () => {
     for (let i = 1; i < maxRows.current; i += 1) {
@@ -115,14 +129,7 @@ export function useCalculations({
     return { indexSortedByRows, newRowBottom };
   };
 
-  const setXCoordinates = ({
-    currentIndexPosition,
-    newIndex,
-    currentCol,
-    newCol,
-    currentRow,
-    newRow,
-  }) => {
+  const setXCoordinates = ({ currentIndexPosition, newIndex }) => {
     // Reset the staged coordinates
     reset();
     // Find the indexes that need to be updated based on the from and to indexes
@@ -185,13 +192,16 @@ export function useCalculations({
     }
   };
 
-  const calcNewCol = ({
-    currentCol,
-    mx,
-  }: {
-    currentCol: number;
-    mx: number;
-  }) => {
+  const setCoordinates = ({ currentIndexPosition, newIndex }) => {
+    setXCoordinates({
+      currentIndexPosition,
+      newIndex,
+    });
+    if (newRow !== currentRow)
+      setYCoordinates({ currentIndexPosition, newIndex });
+  };
+
+  const calcNewCol = ({ mx }: { mx: number }) => {
     return Math.abs(
       clamp(
         Math.round(mx / gridColumnWidth.current + currentCol),
@@ -203,11 +213,9 @@ export function useCalculations({
 
   const calcNewRow = ({
     originalIndex,
-    currentRow,
     my,
   }: {
     originalIndex: number;
-    currentRow: number;
     my: number;
   }) => {
     for (let i = 0; i < maxRows.current; i += 1) {
@@ -226,23 +234,24 @@ export function useCalculations({
   };
 
   const calcNewIndex = ({
-    newCol,
-    newRow,
+    originalIndex,
+    mx,
+    my,
   }: {
-    newCol: number;
-    newRow: number;
+    originalIndex: number;
+    mx: number;
+    my: number;
   }) => {
+    newCol = calcNewCol({ mx });
+    newRow = calcNewRow({ originalIndex, my });
     return clamp(newRow * maxCols + newCol, 0, order.length - 1);
   };
 
   return {
-    calcNewCol,
-    calcNewRow,
     calcNewIndex,
-    calcNewOffsetTopOfRows,
+    initializeData,
+    setCoordinates,
     setNewPosition,
-    setXCoordinates,
-    setYCoordinates,
     getNewPosition,
     getTempPosition,
   };

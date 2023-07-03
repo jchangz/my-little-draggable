@@ -7,7 +7,7 @@ import { useCalculations } from "./helpers/useCalculations";
 import "./App.css";
 
 function App() {
-  const numberOfItems = 6;
+  const numberOfItems = 10;
   const [order, setOrder] = useState<Array<number>>([]);
   const containerRef = useRef<HTMLDivElement>(null);
   const {
@@ -19,13 +19,10 @@ function App() {
     maxCols,
   } = useGridProps(containerRef);
   const {
-    calcNewCol,
-    calcNewRow,
     calcNewIndex,
-    calcNewOffsetTopOfRows,
+    initializeData,
+    setCoordinates,
     setNewPosition,
-    setXCoordinates,
-    setYCoordinates,
     getNewPosition,
     getTempPosition,
   } = useCalculations({
@@ -51,36 +48,20 @@ function App() {
 
   // Variables that get reassigned on first drag move
   let currentIndexPosition = 0;
-  let currentRow = 0;
-  let currentCol = 0;
   let thisIndex = 0;
 
   const bind = useDrag(
     ({ args: [originalIndex], down, active, first, movement: [mx, my] }) => {
       if (first) {
         currentIndexPosition = order.indexOf(originalIndex);
-        currentRow = Math.floor(currentIndexPosition / maxCols);
-        currentCol = currentIndexPosition % maxCols;
         thisIndex = currentIndexPosition;
-
-        calcNewOffsetTopOfRows();
+        initializeData({ currentIndexPosition });
       }
 
-      const newCol = calcNewCol({ currentCol, mx });
-      const newRow = calcNewRow({ originalIndex, currentRow, my });
-      const newIndex = calcNewIndex({ newCol, newRow });
+      const newIndex = calcNewIndex({ originalIndex, mx, my });
 
       if (thisIndex !== newIndex) {
-        setXCoordinates({
-          currentIndexPosition,
-          newIndex,
-          currentCol,
-          newCol,
-          currentRow,
-          newRow,
-        });
-        if (newRow !== currentRow)
-          setYCoordinates({ currentIndexPosition, newIndex });
+        setCoordinates({ currentIndexPosition, newIndex });
 
         thisIndex = newIndex;
       }
