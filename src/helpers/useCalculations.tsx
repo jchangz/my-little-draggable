@@ -11,6 +11,17 @@ export function useCalculations({
 }) {
   const currentMaxHeightPerRow = useRef<Array<number>>([]);
   const offsetTopOfRows = useRef<Array<number>>([]);
+  const tempPosition = useRef<Array<object>>([]);
+  const newPosition = useRef<Array<object>>([]);
+
+  useEffect(() => {
+    tempPosition.current = new Array(order.length)
+      .fill(0)
+      .map(() => ({ x: 0, y: 0 }));
+    newPosition.current = new Array(order.length)
+      .fill(0)
+      .map(() => ({ x: 0, y: 0 }));
+  }, [order.length]);
 
   useEffect(() => {
     offsetTopOfRows.current = new Array(maxRows.current).fill(
@@ -39,6 +50,24 @@ export function useCalculations({
       offsetTopOfRows.current[i] =
         offsetTopOfRows.current[i - 1] + currentMaxHeightPerRow.current[i - 1];
     }
+  };
+
+  const getTempPosition = (index: number) => tempPosition.current[index];
+
+  const getNewPosition = (index: number) => newPosition.current[index];
+
+  const setNewPosition = () => {
+    for (let i = 0; i < newPosition.current.length; i += 1) {
+      newPosition.current[i].x += tempPosition.current[i].x;
+      newPosition.current[i].y += tempPosition.current[i].y;
+    }
+    reset();
+  };
+
+  const reset = () => {
+    tempPosition.current = new Array(order.length)
+      .fill(0)
+      .map(() => ({ x: 0, y: 0 }));
   };
 
   const calcNewCol = ({
@@ -92,10 +121,12 @@ export function useCalculations({
   };
 
   return {
-    currentMaxHeightPerRow,
     calcNewCol,
     calcNewRow,
     calcNewIndex,
     calcNewOffsetTopOfRows,
+    setNewPosition,
+    getNewPosition,
+    getTempPosition,
   };
 }
