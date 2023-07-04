@@ -13,6 +13,7 @@ function App() {
   );
   const boundsRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const cloneRef = useRef<HTMLDivElement>(null);
   const {
     gridColumnWidth,
     gridOffsetFromTop,
@@ -39,8 +40,7 @@ function App() {
   const [springs, api] = useSprings(numberOfItems, () => ({
     x: 0,
     y: 0,
-    opacity: 0,
-    shadow: 0,
+    opacity: 1,
     zIndex: 0,
   }));
 
@@ -49,35 +49,53 @@ function App() {
   let thisIndex = 0;
 
   const bind = useDrag(
-    ({ args: [originalIndex], down, active, first, movement: [mx, my] }) => {
+    ({
+      args: [originalIndex],
+      currentTarget,
+      down,
+      active,
+      first,
+      movement: [mx, my],
+    }) => {
       if (first) {
         currentIndexPosition = order.indexOf(originalIndex);
         thisIndex = currentIndexPosition;
         initializeData({ currentIndexPosition });
+
+        if (cloneRef.current && currentTarget instanceof HTMLElement) {
+          cloneRef.current.className = currentTarget.className;
+          cloneRef.current.style.display = "block";
+          cloneRef.current.style.top = `${currentTarget.offsetTop}px`;
+          cloneRef.current.style.left = `${currentTarget.offsetLeft}px`;
+        }
       }
+
+      if (cloneRef.current)
+        cloneRef.current.style.transform = `translate3D(${
+          newCoordinates[originalIndex].x + mx
+        }px, ${newCoordinates[originalIndex].y + my}px, 0)`;
 
       const newIndex = calcNewIndex({ originalIndex, mx, my });
 
       if (thisIndex !== newIndex) {
         setCoordinates({ currentIndexPosition, newIndex });
-
         thisIndex = newIndex;
       }
 
       api.start((index) => ({
-        x:
-          newCoordinates[index].x +
-          (down && index === originalIndex ? mx : tempCoordinates[index].x),
-        y:
-          newCoordinates[index].y +
-          (down && index === originalIndex ? my : tempCoordinates[index].y),
-        shadow: down && index === originalIndex ? 15 : 0,
-        zIndex: down && index === originalIndex ? 99 : 0,
-        immediate: index === originalIndex ? down : false,
+        x: newCoordinates[index].x + tempCoordinates[index].x,
+        y: newCoordinates[index].y + tempCoordinates[index].y,
+        opacity: down && index === originalIndex ? 0.2 : 1,
+        zIndex: down && index === originalIndex ? 9 : 0,
       }));
+
       if (!active && currentIndexPosition !== newIndex) {
         setNewPosition();
         setOrder(swap(order, currentIndexPosition, newIndex));
+      }
+
+      if (!active && cloneRef.current) {
+        cloneRef.current.style.display = "none";
       }
     },
     {
@@ -89,17 +107,15 @@ function App() {
   return (
     <div className="parent" ref={boundsRef}>
       <div className="container" ref={containerRef}>
-        {springs.map(({ x, y, zIndex, shadow }, i) => (
+        {springs.map(({ x, y, opacity, zIndex }, i) => (
           <a.div
             {...bind(i)}
             className={`item-${i}`}
             style={{
               x,
               y,
+              opacity,
               zIndex,
-              boxShadow: shadow.to(
-                (s) => `rgba(0, 0, 0, 0.5) 0px ${s}px ${2 * s}px 0px`
-              ),
             }}
           >
             <div className="drag-item">
@@ -107,6 +123,15 @@ function App() {
             </div>
           </a.div>
         ))}
+      </div>
+      <div
+        id="item-clone"
+        ref={cloneRef}
+        style={{ width: gridColumnWidth.current, display: "none" }}
+      >
+        <div className="drag-item">
+          <div className="bg-blue"></div>
+        </div>
       </div>
     </div>
   );
