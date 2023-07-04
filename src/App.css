@@ -2,15 +2,22 @@
   width: 100%;
 }
 
-.bodycon {
+.parent {
+  display: flex;
+  align-items: center;
+  min-height: 100vh;
+}
+
+.container {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
   align-items: flex-start;
   max-width: 500px;
+  width: 100%;
   margin: 0 auto;
 }
 
-.bodycon > div {
+.container > div {
   width: 100%;
 }
 

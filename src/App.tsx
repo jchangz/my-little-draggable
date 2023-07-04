@@ -11,6 +11,7 @@ function App() {
   const [order, setOrder] = useState<Array<number>>(
     new Array(numberOfItems).fill(0).map((...[, i]) => i)
   );
+  const boundsRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const {
     gridColumnWidth,
@@ -80,14 +81,14 @@ function App() {
       }
     },
     {
-      bounds: containerRef,
+      bounds: boundsRef,
       preventDefault: true,
     }
   );
 
   return (
-    <>
-      <div className="bodycon" ref={containerRef}>
+    <div className="parent" ref={boundsRef}>
+      <div className="container" ref={containerRef}>
         {springs.map(({ x, y, zIndex, shadow }, i) => (
           <a.div
             {...bind(i)}
@@ -107,7 +108,7 @@ function App() {
           </a.div>
         ))}
       </div>
-    </>
+    </div>
   );
 }
 
