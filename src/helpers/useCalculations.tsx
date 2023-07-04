@@ -31,6 +31,7 @@ export function useCalculations({
   const currentRowBottom = useRef<Array<number>>([]);
   const offsetTopOfRows = useRef<Array<number>>([]);
   const newPosition = useRef<Array<object>>([]);
+  const oddNumberOfIndex = order.length % maxCols;
   let currentCol: number;
   let newCol: number;
   let currentRow: number;
@@ -157,6 +158,14 @@ export function useCalculations({
           };
         }
       }
+
+      if (
+        newRow === maxRows.current - 1 &&
+        oddNumberOfIndex &&
+        newCol >= oddNumberOfIndex
+      )
+        newCol = oddNumberOfIndex - 1;
+
       tempCoordinates[order[currentIndexPosition]] = {
         x: (newCol - currentCol) * gridColumnWidth.current,
         y:
