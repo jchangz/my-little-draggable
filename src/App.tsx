@@ -11,6 +11,7 @@ function App() {
   const [order, setOrder] = useState<Array<number>>(
     new Array(numberOfItems).fill(0).map((...[, i]) => i)
   );
+  const [showClone, setShowClone] = useState(true);
   const boundsRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const cloneRef = useRef<HTMLDivElement>(null);
@@ -42,6 +43,7 @@ function App() {
     y: 0,
     opacity: 1,
     zIndex: 0,
+    shadow: 0,
   }));
 
   // Variables that get reassigned on first drag move
@@ -83,10 +85,20 @@ function App() {
       }
 
       api.start((index) => ({
-        x: newCoordinates[index].x + tempCoordinates[index].x,
-        y: newCoordinates[index].y + tempCoordinates[index].y,
-        opacity: down && index === originalIndex ? 0.2 : 1,
+        x:
+          newCoordinates[index].x +
+          (!showClone && down && index === originalIndex
+            ? mx
+            : tempCoordinates[index].x),
+        y:
+          newCoordinates[index].y +
+          (!showClone && down && index === originalIndex
+            ? my
+            : tempCoordinates[index].y),
+        opacity: down && index === originalIndex ? (!showClone ? 1 : 0.2) : 1,
+        shadow: !showClone && down && index === originalIndex ? 15 : 0,
         zIndex: down && index === originalIndex ? 9 : 0,
+        immediate: !showClone && index === originalIndex ? down : false,
       }));
 
       if (!active && currentIndexPosition !== newIndex) {
@@ -104,36 +116,48 @@ function App() {
     }
   );
 
+  function toggleClone() {
+    setShowClone((prev) => !prev);
+  }
+
   return (
-    <div className="parent" ref={boundsRef}>
-      <div className="container" ref={containerRef}>
-        {springs.map(({ x, y, opacity, zIndex }, i) => (
-          <a.div
-            {...bind(i)}
-            className={`item-${i}`}
-            style={{
-              x,
-              y,
-              opacity,
-              zIndex,
-            }}
+    <>
+      <button onClick={toggleClone}>Show Clone</button>
+      <div className="parent" ref={boundsRef}>
+        <div className="container" ref={containerRef}>
+          {springs.map(({ x, y, opacity, zIndex, shadow }, i) => (
+            <a.div
+              {...bind(i)}
+              className={`item-${i}`}
+              style={{
+                x,
+                y,
+                opacity,
+                zIndex,
+                boxShadow: shadow.to(
+                  (s) => `rgba(0, 0, 0, 0.5) 0px ${s}px ${2 * s}px 0px`
+                ),
+              }}
+            >
+              <div className="drag-item">
+                <div className="bg-red" />
+              </div>
+            </a.div>
+          ))}
+        </div>
+        {showClone && (
+          <div
+            id="item-clone"
+            ref={cloneRef}
+            style={{ width: gridColumnWidth.current, display: "none" }}
           >
             <div className="drag-item">
-              <div className="bg-red"></div>
+              <div className="bg-blue" />
             </div>
-          </a.div>
-        ))}
+          </div>
+        )}
       </div>
-      <div
-        id="item-clone"
-        ref={cloneRef}
-        style={{ width: gridColumnWidth.current, display: "none" }}
-      >
-        <div className="drag-item">
-          <div className="bg-blue"></div>
-        </div>
-      </div>
-    </div>
+    </>
   );
 }
 
