@@ -2,7 +2,7 @@ import { RefObject, useState, useEffect, useRef } from "react";
 
 export function useGridProps(ref: RefObject<HTMLDivElement>) {
   const gridColumnWidth = useRef(0);
-  const gridRowHeights = useRef<Array<Array<number>>>([]);
+  const gridRowHeights = useRef<Array<number>>([]);
   const gridOffsetFromTop = useRef(0);
   const gridGap = useRef({ x: 0, y: 0 });
   const maxRows = useRef(0);

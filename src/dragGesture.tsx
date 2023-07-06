@@ -5,8 +5,8 @@ export const animateWithClone =
     originalIndex,
     down,
   }: {
-    newCoordinates: Array<object>;
-    tempCoordinates: Array<object>;
+    newCoordinates: Array<CoordinateData>;
+    tempCoordinates: Array<CoordinateData>;
     originalIndex: number;
     down: boolean;
   }) =>
@@ -27,8 +27,8 @@ export const animateWithoutClone =
     mx,
     my,
   }: {
-    newCoordinates: Array<object>;
-    tempCoordinates: Array<object>;
+    newCoordinates: Array<CoordinateData>;
+    tempCoordinates: Array<CoordinateData>;
     originalIndex: number;
     down: boolean;
     mx: number;

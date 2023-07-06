@@ -2,7 +2,11 @@ import { useState, useEffect, useRef } from "react";
 import { clamp, range } from "lodash";
 import { swap } from "./swap";
 
-const getHeightShift = (newRow, currentRow, originalHeightArr) => {
+const getHeightShift = (
+  newRow: number,
+  currentRow: number,
+  originalHeightArr: Array<number>
+) => {
   const heightToShiftValue = range(newRow, currentRow)
     .map((rr) => {
       const sign = newRow > currentRow ? 1 : -1;
@@ -20,8 +24,8 @@ export function useCalculations({
   gridColumnWidth,
   gridRowHeights,
   gridOffsetFromTop,
-}) {
-  const [newCoordinates, setNewCoordinates] = useState<Array<object>>(
+}: CalculationsData) {
+  const [newCoordinates, setNewCoordinates] = useState<Array<CoordinateData>>(
     new Array(order.length).fill(0).map(() => ({ x: 0, y: 0 }))
   );
   const tempCoordinates = new Array(order.length)
@@ -30,7 +34,7 @@ export function useCalculations({
   const currentMaxHeightPerRow = useRef<Array<number>>([]);
   const currentRowBottom = useRef<Array<number>>([]);
   const offsetTopOfRows = useRef<Array<number>>([]);
-  const newPosition = useRef<Array<object>>([]);
+  const newPosition = useRef<Array<CoordinateData>>([]);
   const oddNumberOfIndex = order.length % maxCols;
   let currentCol: number;
   let newCol: number;
@@ -65,7 +69,7 @@ export function useCalculations({
     currentMaxHeightPerRow.current = Object.values(rowHeightObj);
 
     currentRowBottom.current = currentMaxHeightPerRow.current.reduce(
-      (resultArray, item, i) => {
+      (resultArray: Array<number>, item, i) => {
         const newArray = resultArray;
         const val =
           item + (i === 0 ? gridOffsetFromTop.current : resultArray[i - 1]);
@@ -130,7 +134,13 @@ export function useCalculations({
     return { indexSortedByRows, newRowBottom };
   };
 
-  const setXCoordinates = ({ currentIndexPosition, newIndex }) => {
+  const setXCoordinates = ({
+    currentIndexPosition,
+    newIndex,
+  }: {
+    currentIndexPosition: number;
+    newIndex: number;
+  }) => {
     // Find the indexes that need to be updated based on the from and to indexes
     const indexesToUpdate = range(newIndex, currentIndexPosition);
     // Check the direction we need to shift the indexes
@@ -199,7 +209,13 @@ export function useCalculations({
     }
   };
 
-  const setCoordinates = ({ currentIndexPosition, newIndex }) => {
+  const setCoordinates = ({
+    currentIndexPosition,
+    newIndex,
+  }: {
+    currentIndexPosition: number;
+    newIndex: number;
+  }) => {
     // Reset the staged coordinates
     reset();
     setXCoordinates({
