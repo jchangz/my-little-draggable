@@ -4,6 +4,7 @@ import { useDrag } from "@use-gesture/react";
 import { swap } from "./helpers/swap";
 import { useGridProps } from "./helpers/useGridProps";
 import { useCalculations } from "./helpers/useCalculations";
+import { animateWithClone, animateWithoutClone } from "./dragGesture";
 import "./App.css";
 
 function App() {
@@ -83,23 +84,29 @@ function App() {
         setCoordinates({ currentIndexPosition, newIndex });
         thisIndex = newIndex;
       }
-
-      api.start((index) => ({
-        x:
-          newCoordinates[index].x +
-          (!showClone && down && index === originalIndex
-            ? mx
-            : tempCoordinates[index].x),
-        y:
-          newCoordinates[index].y +
-          (!showClone && down && index === originalIndex
-            ? my
-            : tempCoordinates[index].y),
-        opacity: down && index === originalIndex ? (!showClone ? 1 : 0.2) : 1,
-        shadow: !showClone && down && index === originalIndex ? 15 : 0,
-        zIndex: down && index === originalIndex ? 9 : 0,
-        immediate: !showClone && index === originalIndex ? down : false,
-      }));
+      tempCoordinates.forEach((res) => {
+        console.log(res);
+      });
+      if (showClone)
+        api.start(
+          animateWithClone({
+            newCoordinates,
+            tempCoordinates,
+            originalIndex,
+            down,
+          })
+        );
+      else
+        api.start(
+          animateWithoutClone({
+            newCoordinates,
+            tempCoordinates,
+            originalIndex,
+            down,
+            mx,
+            my,
+          })
+        );
 
       if (!active && currentIndexPosition !== newIndex) {
         setNewPosition();
