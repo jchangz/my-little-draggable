@@ -244,19 +244,20 @@ export function useCalculations({
     originalIndex: number;
     my: number;
   }) => {
+    // Position of the top of the index being moved relative to the top
+    const yOffset = offsetTopOfRows.current[currentRow] + my;
+    // The trigger point is halfway of the height of the current index
+    const indexHeightHalfway = gridRowHeights.current[originalIndex] / 2;
+
+    // Monitor each row
     for (let i = 0; i < maxRows.current; i += 1) {
-      // Calculate and return the new row
-      if (
-        offsetTopOfRows.current[i + 1] &&
-        offsetTopOfRows.current[currentRow] + my <
-          offsetTopOfRows.current[i + 1] -
-            gridRowHeights.current[originalIndex] / 2
-      ) {
+      const offsetOfNextRow = offsetTopOfRows.current[i + 1];
+      if (offsetOfNextRow && yOffset < offsetOfNextRow - indexHeightHalfway) {
         return i;
       }
     }
-    // When we are in the last row
-    return offsetTopOfRows.current.length - 1;
+    // Else return the last row
+    return maxRows.current - 1;
   };
 
   const calcNewIndex = ({
