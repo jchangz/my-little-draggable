@@ -58,6 +58,7 @@ function App() {
       down,
       active,
       first,
+      velocity,
       movement: [mx, my],
     }) => {
       if (first) {
@@ -80,7 +81,7 @@ function App() {
 
       const newIndex = calcNewIndex({ originalIndex, mx, my });
 
-      if (thisIndex !== newIndex) {
+      if (thisIndex !== newIndex && velocity[0] < 0.7) {
         setCoordinates({ currentIndexPosition, newIndex });
         thisIndex = newIndex;
       }
