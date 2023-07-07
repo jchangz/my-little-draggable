@@ -91,14 +91,14 @@ export function useCalculations({
   };
 
   const calcNewOffsetTopOfRows = () => {
-    for (let i = 1; i < maxRows.current; i += 1) {
+    for (let i = 1, j = maxRows.current; i < j; i += 1) {
       offsetTopOfRows.current[i] =
         offsetTopOfRows.current[i - 1] + currentMaxHeightPerRow.current[i - 1];
     }
   };
 
   const setNewPosition = () => {
-    for (let i = 0; i < newPosition.current.length; i += 1) {
+    for (let i = 0, j = newPosition.current.length; i < j; i += 1) {
       newPosition.current[i].x += tempCoordinates[i].x;
       newPosition.current[i].y += tempCoordinates[i].y;
     }
@@ -114,11 +114,10 @@ export function useCalculations({
   };
 
   const getNewMaxHeights = (order: Array<number>) => {
-    const numberOfRows = Math.ceil(order.length / maxCols);
     const indexSortedByRows = [];
     const newRowBottom = [];
 
-    for (let i = 0; i < numberOfRows; i += 1) {
+    for (let i = 0; i < maxRows.current; i += 1) {
       const slice = order.slice(i * maxCols, (i + 1) * maxCols);
       indexSortedByRows.push(slice);
 
@@ -147,7 +146,7 @@ export function useCalculations({
     const direction = Math.sign(currentIndexPosition - newIndex);
 
     if (direction) {
-      for (let i = 0; i < indexesToUpdate.length; i += 1) {
+      for (let i = 0, j = indexesToUpdate.length; i < j; i += 1) {
         const thisIndex = indexesToUpdate[i];
         const thisIndexRow = Math.floor(thisIndex / maxCols);
         if (direction > 0) {
@@ -196,14 +195,16 @@ export function useCalculations({
     const newOrder = swap(order, currentIndexPosition, newIndex);
     // Runs when switching to a new row, we need to keep the new coordinates updated
     const { indexSortedByRows, newRowBottom } = getNewMaxHeights(newOrder);
+    const length = currentMaxHeightPerRow.current.length;
     // Shift all items rows with height differences
-    for (let i = 0; i < newRowBottom.length; i += 1) {
+    for (let i = 0, h = newRowBottom.length; i < h; i += 1) {
       const heightDiff = newRowBottom[i] - currentRowBottom.current[i];
 
-      if (heightDiff && i + 1 < currentMaxHeightPerRow.current.length) {
-        for (let j = 0; j < indexSortedByRows[i + 1].length; j += 1) {
+      if (heightDiff && i + 1 < length) {
+        const nextIndex = indexSortedByRows[i + 1];
+        for (let j = 0, k = nextIndex.length; j < k; j += 1) {
           // Add new height difference to each index in the row
-          tempCoordinates[indexSortedByRows[i + 1][j]].y += heightDiff;
+          tempCoordinates[nextIndex[j]].y += heightDiff;
         }
       }
     }
