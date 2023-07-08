@@ -16,6 +16,9 @@ function App() {
     new Array(numberOfItems).fill(0).map((...[, i]) => i)
   );
 
+  const [newCoordinates, setNewCoordinates] = useState<CoordinateData[]>([]);
+  const tempCoordinates = [...Array(numberOfItems)].map(() => ({ x: 0, y: 0 }));
+
   const gridOffsetFromTop = useRef(0);
   const gridColumnWidth = useRef(0);
   const gridRowHeights = useRef<number[]>([]);
@@ -43,23 +46,22 @@ function App() {
 
       gridRowHeights.current = heightArr;
     }
+
+    setNewCoordinates([...Array(numberOfItems)].map(() => ({ x: 0, y: 0 })));
   }, [maxCols]);
 
-  const {
-    newCoordinates,
-    tempCoordinates,
-    calcNewIndex,
-    initializeData,
-    setCoordinates,
-    setNewPosition,
-  } = useCalculations({
-    order,
-    maxCols,
-    maxRows,
-    gridColumnWidth,
-    gridRowHeights,
-    gridOffsetFromTop,
-  });
+  const { calcNewIndex, initializeData, setCoordinates, setNewPosition } =
+    useCalculations({
+      order,
+      tempCoordinates,
+      setNewCoordinates,
+      maxCols,
+      maxRows,
+      gridColumnWidth,
+      gridRowHeights,
+      gridOffsetFromTop,
+    });
+
   const [springs, api] = useSprings(numberOfItems, () => ({
     x: 0,
     y: 0,

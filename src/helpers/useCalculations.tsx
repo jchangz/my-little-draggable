@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useEffect, useRef } from "react";
 import { clamp, range } from "lodash";
 import { swap } from "./swap";
 
@@ -19,18 +19,14 @@ const getHeightShift = (
 
 export function useCalculations({
   order,
+  tempCoordinates,
+  setNewCoordinates,
   maxCols,
   maxRows,
   gridColumnWidth,
   gridRowHeights,
   gridOffsetFromTop,
 }: CalculationsData) {
-  const [newCoordinates, setNewCoordinates] = useState<Array<CoordinateData>>(
-    new Array(order.length).fill(0).map(() => ({ x: 0, y: 0 }))
-  );
-  const tempCoordinates = new Array(order.length)
-    .fill(0)
-    .map(() => ({ x: 0, y: 0 }));
   const currentMaxHeightPerRow = useRef<Array<number>>([]);
   const currentRowBottom = useRef<Array<number>>([]);
   const offsetTopOfRows = useRef<Array<number>>([]);
@@ -275,8 +271,6 @@ export function useCalculations({
   };
 
   return {
-    newCoordinates,
-    tempCoordinates,
     calcNewIndex,
     initializeData,
     setCoordinates,
