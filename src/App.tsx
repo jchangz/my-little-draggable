@@ -81,13 +81,11 @@ function App() {
 
       const newIndex = calcNewIndex({ originalIndex, mx, my });
 
-      if (thisIndex !== newIndex && velocity[0] < 0.7) {
+      if (thisIndex !== newIndex && velocity[0] < 0.7 && velocity[1] < 0.7) {
         setCoordinates({ currentIndexPosition, newIndex });
         thisIndex = newIndex;
       }
-      tempCoordinates.forEach((res) => {
-        console.log(res);
-      });
+
       if (showClone)
         api.start(
           animateWithClone({
@@ -108,6 +106,21 @@ function App() {
             my,
           })
         );
+
+      // If user drags and releases beyond the velocity limit
+      if (!active && thisIndex !== newIndex) {
+        setCoordinates({ currentIndexPosition, newIndex });
+        api.start(
+          animateWithoutClone({
+            newCoordinates,
+            tempCoordinates,
+            originalIndex,
+            down,
+            mx,
+            my,
+          })
+        );
+      }
 
       if (!active && currentIndexPosition !== newIndex) {
         setNewPosition();
