@@ -48,7 +48,7 @@ export function useCalculations({
   }, [order.length]);
 
   useEffect(() => {
-    offsetTopOfRows.current = new Array(maxRows.current).fill(
+    offsetTopOfRows.current = new Array(maxRows).fill(
       gridOffsetFromTop.current
     );
   }, [maxRows, gridOffsetFromTop]);
@@ -91,7 +91,7 @@ export function useCalculations({
   };
 
   const calcNewOffsetTopOfRows = () => {
-    for (let i = 1, j = maxRows.current; i < j; i += 1) {
+    for (let i = 1, j = maxRows; i < j; i += 1) {
       offsetTopOfRows.current[i] =
         offsetTopOfRows.current[i - 1] + currentMaxHeightPerRow.current[i - 1];
     }
@@ -117,7 +117,7 @@ export function useCalculations({
     const indexSortedByRows = [];
     const newRowBottom = [];
 
-    for (let i = 0; i < maxRows.current; i += 1) {
+    for (let i = 0; i < maxRows; i += 1) {
       const slice = order.slice(i * maxCols, (i + 1) * maxCols);
       indexSortedByRows.push(slice);
 
@@ -169,7 +169,7 @@ export function useCalculations({
       }
 
       if (
-        newRow === maxRows.current - 1 &&
+        newRow === maxRows - 1 &&
         oddNumberOfIndex &&
         newCol >= oddNumberOfIndex
       )
@@ -250,14 +250,14 @@ export function useCalculations({
     const indexHeightHalfway = gridRowHeights.current[originalIndex] / 2;
 
     // Monitor each row
-    for (let i = 0; i < maxRows.current; i += 1) {
+    for (let i = 0; i < maxRows; i += 1) {
       const offsetOfNextRow = offsetTopOfRows.current[i + 1];
       if (offsetOfNextRow && yOffset < offsetOfNextRow - indexHeightHalfway) {
         return i;
       }
     }
     // Else return the last row
-    return maxRows.current - 1;
+    return maxRows - 1;
   };
 
   const calcNewIndex = ({

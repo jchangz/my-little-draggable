@@ -1,29 +1,50 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useSprings, a } from "@react-spring/web";
 import { useDrag } from "@use-gesture/react";
 import { swap } from "./helpers/swap";
-import { useGridProps } from "./helpers/useGridProps";
 import { useCalculations } from "./helpers/useCalculations";
 import { animateWithClone, animateWithoutClone } from "./dragGesture";
 import "./App.css";
 
 function App() {
   const numberOfItems = 10;
+  const [maxCols, setMaxCols] = useState(3);
+  const [gridGap, setGridGap] = useState(0);
+  const maxRows = Math.ceil(numberOfItems / maxCols);
+
   const [order, setOrder] = useState<Array<number>>(
     new Array(numberOfItems).fill(0).map((...[, i]) => i)
   );
+
+  const gridOffsetFromTop = useRef(0);
+  const gridColumnWidth = useRef(0);
+  const gridRowHeights = useRef<number[]>([]);
+
   const [showClone, setShowClone] = useState(true);
   const boundsRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const cloneRef = useRef<HTMLDivElement>(null);
-  const {
-    gridColumnWidth,
-    gridOffsetFromTop,
-    gridRowHeights,
-    gridGap,
-    maxRows,
-    maxCols,
-  } = useGridProps(containerRef);
+
+  useEffect(() => {
+    gridOffsetFromTop.current = containerRef.current?.offsetTop || 0;
+
+    if (containerRef.current) {
+      const itemArr = containerRef.current.children;
+      const heightArr: number[] = [];
+      if (itemArr.length < 1) return;
+
+      [...itemArr].forEach((item, i) => {
+        const { width, height } = item.getBoundingClientRect();
+
+        if (i === 0) gridColumnWidth.current = width;
+
+        heightArr.push(height);
+      });
+
+      gridRowHeights.current = heightArr;
+    }
+  }, [maxCols]);
+
   const {
     newCoordinates,
     tempCoordinates,
