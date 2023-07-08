@@ -1,4 +1,3 @@
-import { useEffect, useRef } from "react";
 import { clamp, range } from "lodash";
 import { swap } from "./swap";
 
@@ -20,34 +19,22 @@ const getHeightShift = (
 export function useCalculations({
   order,
   tempCoordinates,
+  newCoordinates,
   setNewCoordinates,
   maxCols,
   maxRows,
   gridColumnWidth,
   gridRowHeights,
   gridOffsetFromTop,
+  offsetTopOfRows,
   currentMaxHeightPerRow,
   currentRowBottom,
 }: CalculationsData) {
-  const offsetTopOfRows = useRef<Array<number>>([]);
-  const newPosition = useRef<Array<CoordinateData>>([]);
   const oddNumberOfIndex = order.length % maxCols;
   let currentCol: number;
   let newCol: number;
   let currentRow: number;
   let newRow: number;
-
-  useEffect(() => {
-    newPosition.current = new Array(order.length)
-      .fill(0)
-      .map(() => ({ x: 0, y: 0 }));
-  }, [order.length]);
-
-  useEffect(() => {
-    offsetTopOfRows.current = new Array(maxRows).fill(
-      gridOffsetFromTop.current
-    );
-  }, [maxRows, gridOffsetFromTop]);
 
   const initializeData = ({
     currentIndexPosition,
@@ -56,30 +43,15 @@ export function useCalculations({
   }) => {
     currentRow = Math.floor(currentIndexPosition / maxCols);
     currentCol = currentIndexPosition % maxCols;
-    calcNewOffsetTopOfRows();
-  };
-
-  const calcNewOffsetTopOfRows = () => {
-    for (let i = 1, j = maxRows; i < j; i += 1) {
-      offsetTopOfRows.current[i] =
-        offsetTopOfRows.current[i - 1] + currentMaxHeightPerRow[i - 1];
-    }
   };
 
   const setNewPosition = () => {
-    for (let i = 0, j = newPosition.current.length; i < j; i += 1) {
-      newPosition.current[i].x += tempCoordinates[i].x;
-      newPosition.current[i].y += tempCoordinates[i].y;
+    const stagingCoordinates = newCoordinates;
+    for (let i = 0, j = order.length; i < j; i += 1) {
+      stagingCoordinates[i].x += tempCoordinates[i].x;
+      stagingCoordinates[i].y += tempCoordinates[i].y;
     }
-    setNewCoordinates(newPosition.current);
-    reset();
-  };
-
-  const reset = () => {
-    tempCoordinates.forEach((v) => {
-      v.x = 0;
-      v.y = 0;
-    });
+    setNewCoordinates(stagingCoordinates);
   };
 
   const getNewMaxHeights = (order: Array<number>) => {
@@ -187,7 +159,10 @@ export function useCalculations({
     newIndex: number;
   }) => {
     // Reset the staged coordinates
-    reset();
+    for (let i = 0, j = tempCoordinates.length; i < j; i += 1) {
+      tempCoordinates[i].x = 0;
+      tempCoordinates[i].y = 0;
+    }
     setXCoordinates({
       currentIndexPosition,
       newIndex,
@@ -214,13 +189,13 @@ export function useCalculations({
     my: number;
   }) => {
     // Position of the top of the index being moved relative to the top
-    const yOffset = offsetTopOfRows.current[currentRow] + my;
+    const yOffset = offsetTopOfRows[currentRow] + my;
     // The trigger point is halfway of the height of the current index
     const indexHeightHalfway = gridRowHeights.current[originalIndex] / 2;
 
     // Monitor each row
     for (let i = 0; i < maxRows; i += 1) {
-      const offsetOfNextRow = offsetTopOfRows.current[i + 1];
+      const offsetOfNextRow = offsetTopOfRows[i + 1];
       if (offsetOfNextRow && yOffset < offsetOfNextRow - indexHeightHalfway) {
         return i;
       }

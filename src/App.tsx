@@ -23,6 +23,7 @@ function App() {
   const gridOffsetFromTop = useRef(0);
   const gridColumnWidth = useRef(0);
   const gridRowHeights = useRef<number[]>([]);
+  const offsetTopOfRows = [...Array(maxRows)].fill(gridOffsetFromTop.current);
 
   const { currentMaxHeightPerRow, currentRowBottom } = calculateRowHeights(
     order,
@@ -57,18 +58,20 @@ function App() {
     }
 
     setNewCoordinates([...Array(numberOfItems)].map(() => ({ x: 0, y: 0 })));
-  }, [maxCols]);
+  }, [maxCols, maxRows]);
 
   const { calcNewIndex, initializeData, setCoordinates, setNewPosition } =
     useCalculations({
       order,
       tempCoordinates,
+      newCoordinates,
       setNewCoordinates,
       maxCols,
       maxRows,
       gridColumnWidth,
       gridRowHeights,
       gridOffsetFromTop,
+      offsetTopOfRows,
       currentMaxHeightPerRow,
       currentRowBottom,
     });
@@ -99,6 +102,12 @@ function App() {
         currentIndexPosition = order.indexOf(originalIndex);
         thisIndex = currentIndexPosition;
         initializeData({ currentIndexPosition });
+
+        // Calculate new offset top of rows
+        for (let i = 1, j = maxRows; i < j; i += 1) {
+          offsetTopOfRows[i] =
+            offsetTopOfRows[i - 1] + currentMaxHeightPerRow[i - 1];
+        }
 
         if (cloneRef.current && currentTarget instanceof HTMLElement) {
           cloneRef.current.className = currentTarget.className;
