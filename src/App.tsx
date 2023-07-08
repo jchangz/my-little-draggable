@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { useSprings, a } from "@react-spring/web";
 import { useDrag } from "@use-gesture/react";
 import { swap } from "./helpers/swap";
+import { calculateRowHeights } from "./calculations";
 import { useCalculations } from "./helpers/useCalculations";
 import { animateWithClone, animateWithoutClone } from "./dragGesture";
 import "./App.css";
@@ -22,6 +23,14 @@ function App() {
   const gridOffsetFromTop = useRef(0);
   const gridColumnWidth = useRef(0);
   const gridRowHeights = useRef<number[]>([]);
+
+  const { currentMaxHeightPerRow, currentRowBottom } = calculateRowHeights(
+    order,
+    maxRows,
+    maxCols,
+    gridRowHeights.current,
+    gridOffsetFromTop.current
+  );
 
   const [showClone, setShowClone] = useState(true);
   const boundsRef = useRef<HTMLDivElement>(null);
@@ -60,6 +69,8 @@ function App() {
       gridColumnWidth,
       gridRowHeights,
       gridOffsetFromTop,
+      currentMaxHeightPerRow,
+      currentRowBottom,
     });
 
   const [springs, api] = useSprings(numberOfItems, () => ({

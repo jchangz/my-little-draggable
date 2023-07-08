@@ -26,9 +26,9 @@ export function useCalculations({
   gridColumnWidth,
   gridRowHeights,
   gridOffsetFromTop,
+  currentMaxHeightPerRow,
+  currentRowBottom,
 }: CalculationsData) {
-  const currentMaxHeightPerRow = useRef<Array<number>>([]);
-  const currentRowBottom = useRef<Array<number>>([]);
   const offsetTopOfRows = useRef<Array<number>>([]);
   const newPosition = useRef<Array<CoordinateData>>([]);
   const oddNumberOfIndex = order.length % maxCols;
@@ -49,33 +49,6 @@ export function useCalculations({
     );
   }, [maxRows, gridOffsetFromTop]);
 
-  useEffect(() => {
-    const rowHeightObj: { [id: number]: number } = {};
-    order.forEach((val: number, i: number) => {
-      const rowNum = Math.ceil((i + 1) / maxCols);
-      if (!rowHeightObj[rowNum])
-        rowHeightObj[rowNum] = gridRowHeights.current[val];
-      else {
-        if (gridRowHeights.current[val] > rowHeightObj[rowNum]) {
-          rowHeightObj[rowNum] = gridRowHeights.current[val];
-        }
-      }
-    });
-
-    currentMaxHeightPerRow.current = Object.values(rowHeightObj);
-
-    currentRowBottom.current = currentMaxHeightPerRow.current.reduce(
-      (resultArray: Array<number>, item, i) => {
-        const newArray = resultArray;
-        const val =
-          item + (i === 0 ? gridOffsetFromTop.current : resultArray[i - 1]);
-        newArray.push(val);
-        return newArray;
-      },
-      []
-    );
-  }, [order, maxCols, gridRowHeights, gridOffsetFromTop]);
-
   const initializeData = ({
     currentIndexPosition,
   }: {
@@ -89,7 +62,7 @@ export function useCalculations({
   const calcNewOffsetTopOfRows = () => {
     for (let i = 1, j = maxRows; i < j; i += 1) {
       offsetTopOfRows.current[i] =
-        offsetTopOfRows.current[i - 1] + currentMaxHeightPerRow.current[i - 1];
+        offsetTopOfRows.current[i - 1] + currentMaxHeightPerRow[i - 1];
     }
   };
 
@@ -151,7 +124,7 @@ export function useCalculations({
             x: shiftDown
               ? -(maxCols - 1) * gridColumnWidth.current
               : gridColumnWidth.current,
-            y: shiftDown ? currentMaxHeightPerRow.current[thisIndexRow] : 0,
+            y: shiftDown ? currentMaxHeightPerRow[thisIndexRow] : 0,
           };
         } else if (direction < 0) {
           const shiftUp = !(thisIndex % maxCols);
@@ -159,7 +132,7 @@ export function useCalculations({
             x: shiftUp
               ? (maxCols - 1) * gridColumnWidth.current
               : -gridColumnWidth.current,
-            y: shiftUp ? -currentMaxHeightPerRow.current[thisIndexRow - 1] : 0,
+            y: shiftUp ? -currentMaxHeightPerRow[thisIndexRow - 1] : 0,
           };
         }
       }
@@ -175,7 +148,7 @@ export function useCalculations({
         x: (newCol - currentCol) * gridColumnWidth.current,
         y:
           newRow !== currentRow
-            ? getHeightShift(newRow, currentRow, currentMaxHeightPerRow.current)
+            ? getHeightShift(newRow, currentRow, currentMaxHeightPerRow)
             : 0,
       };
     }
@@ -191,10 +164,10 @@ export function useCalculations({
     const newOrder = swap(order, currentIndexPosition, newIndex);
     // Runs when switching to a new row, we need to keep the new coordinates updated
     const { indexSortedByRows, newRowBottom } = getNewMaxHeights(newOrder);
-    const length = currentMaxHeightPerRow.current.length;
+    const length = currentMaxHeightPerRow.length;
     // Shift all items rows with height differences
     for (let i = 0, h = newRowBottom.length; i < h; i += 1) {
-      const heightDiff = newRowBottom[i] - currentRowBottom.current[i];
+      const heightDiff = newRowBottom[i] - currentRowBottom[i];
 
       if (heightDiff && i + 1 < length) {
         const nextIndex = indexSortedByRows[i + 1];
