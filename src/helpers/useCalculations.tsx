@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { clamp, range } from "lodash";
 import { swap } from "./swap";
 import {
@@ -91,17 +91,11 @@ export function useCalculations({ order, containerRef }: CalculationsData) {
     }
   };
 
-  const setXCoordinates = ({
-    currentIndexPosition,
-    newIndex,
-  }: {
-    currentIndexPosition: number;
-    newIndex: number;
-  }) => {
+  const setXCoordinates = (indexPosition: number, newIndex: number) => {
     // Find the indexes that need to be updated based on the from and to indexes
-    const indexesToUpdate = range(newIndex, currentIndexPosition.current);
+    const indexesToUpdate = range(newIndex, indexPosition);
     // Check the direction we need to shift the indexes
-    const direction = Math.sign(currentIndexPosition.current - newIndex);
+    const direction = Math.sign(indexPosition - newIndex);
 
     if (direction) {
       for (let i = 0, j = indexesToUpdate.length; i < j; i += 1) {
@@ -133,7 +127,7 @@ export function useCalculations({ order, containerRef }: CalculationsData) {
       )
         newCol.current = oddNumberOfIndex - 1;
 
-      tempCoordinates.current[order[currentIndexPosition.current]] = {
+      tempCoordinates.current[order[indexPosition]] = {
         x: (newCol.current - currentCol.current) * columnWidth.current,
         y:
           newRow !== currentRow
@@ -147,14 +141,8 @@ export function useCalculations({ order, containerRef }: CalculationsData) {
     }
   };
 
-  const setYCoordinates = ({
-    currentIndexPosition,
-    newIndex,
-  }: {
-    currentIndexPosition: number;
-    newIndex: number;
-  }) => {
-    const newOrder = swap(order, currentIndexPosition.current, newIndex);
+  const setYCoordinates = (indexPosition: number, newIndex: number) => {
+    const newOrder = swap(order, indexPosition, newIndex);
     const { indexSortedByRows, newRowBottom } = calculateNewMaxHeights(
       newOrder,
       maxCols,
@@ -181,20 +169,17 @@ export function useCalculations({ order, containerRef }: CalculationsData) {
     currentIndexPosition,
     newIndex,
   }: {
-    currentIndexPosition: number;
+    currentIndexPosition: React.RefObject<number>;
     newIndex: number;
   }) => {
+    const indexPosition = currentIndexPosition.current || 0;
     // Reset the staged coordinates
     for (let i = 0, j = tempCoordinates.current.length; i < j; i += 1) {
       tempCoordinates.current[i].x = 0;
       tempCoordinates.current[i].y = 0;
     }
-    setXCoordinates({
-      currentIndexPosition,
-      newIndex,
-    });
-    if (newRow !== currentRow)
-      setYCoordinates({ currentIndexPosition, newIndex });
+    setXCoordinates(indexPosition, newIndex);
+    if (newRow !== currentRow) setYCoordinates(indexPosition, newIndex);
   };
 
   const calcNewCol = ({ mx }: { mx: number }) => {

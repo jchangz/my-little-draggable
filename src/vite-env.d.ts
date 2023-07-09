@@ -13,11 +13,7 @@ export declare global {
   }
   interface CalculationsData {
     order: Array<number>;
-    maxCols: number;
-    maxRows: React.RefObject;
-    gridColumnWidth: React.RefObject;
-    gridRowHeights: React.RefObject;
-    gridOffsetFromTop: React.RefObject;
+    containerRef: React.RefObject<HTMLDivElement>;
   }
   interface MirrorData {
     mx: number;
