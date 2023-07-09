@@ -39,10 +39,11 @@
   aspect-ratio: 2/3;
 }
 
-#item-clone {
+#item-mirror {
   position: absolute;
   top: 0;
   z-index: 99;
+  width: var(--col-width);
 }
 
 .bg-blue {

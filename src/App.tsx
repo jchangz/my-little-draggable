@@ -1,5 +1,5 @@
 import { useRef, useState } from "react";
-import { useSprings, a } from "@react-spring/web";
+import { useSpring, useSprings, a } from "@react-spring/web";
 import { useDrag } from "@use-gesture/react";
 import { swap } from "./helpers/swap";
 import { useCalculations } from "./helpers/useCalculations";
@@ -11,10 +11,16 @@ function App() {
   const [order, setOrder] = useState<Array<number>>(
     new Array(numberOfItems).fill(0).map((...[, i]) => i)
   );
-  const [showClone, setShowClone] = useState(true);
+  const [showMirror, setShowMirror] = useState(true);
+  const [mirrorIndex, setMirrorIndex] = useState(false);
+
+  const currentIndexPosition = useRef(0);
+  const thisIndex = useRef(0);
+
+  // DOM references
   const boundsRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
-  const cloneRef = useRef<HTMLDivElement>(null);
+  const mirrorRef = useRef<HTMLDivElement>(null);
 
   const {
     newCoordinates,
@@ -28,6 +34,13 @@ function App() {
     containerRef,
   });
 
+  const [mirror, mirrorApi] = useSpring(
+    ({ mx, my, top, left }: MirrorData) => ({
+      to: { x: mx, y: my, top: top, left: left },
+    }),
+    []
+  );
+
   const [springs, api] = useSprings(numberOfItems, () => ({
     x: 0,
     y: 0,
@@ -35,10 +48,6 @@ function App() {
     zIndex: 0,
     shadow: 0,
   }));
-
-  // Variables that get reassigned on first drag move
-  let currentIndexPosition = 0;
-  let thisIndex = 0;
 
   const bind = useDrag(
     ({
@@ -51,31 +60,36 @@ function App() {
       movement: [mx, my],
     }) => {
       if (first) {
-        currentIndexPosition = order.indexOf(originalIndex);
-        thisIndex = currentIndexPosition;
-        initCoordinates(currentIndexPosition);
+        if (showMirror) setMirrorIndex(originalIndex);
 
-        if (cloneRef.current && currentTarget instanceof HTMLElement) {
-          cloneRef.current.className = currentTarget.className;
-          cloneRef.current.style.display = "block";
-          cloneRef.current.style.top = `${currentTarget.offsetTop}px`;
-          cloneRef.current.style.left = `${currentTarget.offsetLeft}px`;
-        }
+        currentIndexPosition.current = order.indexOf(originalIndex);
+        thisIndex.current = currentIndexPosition.current;
+
+        initCoordinates(currentIndexPosition.current);
       }
 
-      if (cloneRef.current)
-        cloneRef.current.style.transform = `translate3D(${
-          newCoordinates[originalIndex].x + mx
-        }px, ${newCoordinates[originalIndex].y + my}px, 0)`;
+      if (showMirror && currentTarget instanceof HTMLElement) {
+        mirrorApi.start({
+          x: newCoordinates[originalIndex].x + mx,
+          y: newCoordinates[originalIndex].y + my,
+          top: currentTarget.offsetTop,
+          left: currentTarget.offsetLeft,
+          immediate: true,
+        });
+      }
 
       const newIndex = calcNewIndex({ originalIndex, mx, my });
 
-      if (thisIndex !== newIndex && velocity[0] < 0.7 && velocity[1] < 0.7) {
+      if (
+        thisIndex.current !== newIndex &&
+        velocity[0] < 0.7 &&
+        velocity[1] < 0.7
+      ) {
         setCoordinates({ currentIndexPosition, newIndex });
-        thisIndex = newIndex;
+        thisIndex.current = newIndex;
       }
 
-      if (showClone)
+      if (showMirror)
         api.start(
           animateWithClone({
             newCoordinates,
@@ -97,7 +111,7 @@ function App() {
         );
 
       // If user drags and releases beyond the velocity limit
-      if (!active && thisIndex !== newIndex) {
+      if (!active && thisIndex.current !== newIndex) {
         setCoordinates({ currentIndexPosition, newIndex });
         api.start(
           animateWithoutClone({
@@ -111,14 +125,12 @@ function App() {
         );
       }
 
-      if (!active && currentIndexPosition !== newIndex) {
+      if (!active && currentIndexPosition.current !== newIndex) {
         setNewPosition();
-        setOrder(swap(order, currentIndexPosition, newIndex));
+        setOrder(swap(order, currentIndexPosition.current, newIndex));
       }
 
-      if (!active && cloneRef.current) {
-        cloneRef.current.style.display = "none";
-      }
+      if (!active && showMirror) setMirrorIndex(false);
     },
     {
       bounds: boundsRef,
@@ -126,13 +138,13 @@ function App() {
     }
   );
 
-  function toggleClone() {
-    setShowClone((prev) => !prev);
+  function toggleMirror() {
+    setShowMirror((prev) => !prev);
   }
 
   return (
     <>
-      <button onClick={toggleClone}>Show Clone</button>
+      <button onClick={toggleMirror}>Enable Mirror</button>
       <div className="parent" ref={boundsRef}>
         <div className="container" ref={containerRef}>
           {springs.map(({ x, y, opacity, zIndex, shadow }, i) => (
@@ -155,12 +167,17 @@ function App() {
             </a.div>
           ))}
         </div>
-        {showClone && (
-          <div id="item-clone" ref={cloneRef} style={{ display: "none" }}>
+        {showMirror && mirrorIndex !== false && (
+          <a.div
+            className={`item-${mirrorIndex}`}
+            id="item-mirror"
+            ref={mirrorRef}
+            style={mirror}
+          >
             <div className="drag-item">
               <div className="bg-blue" />
             </div>
-          </div>
+          </a.div>
         )}
       </div>
     </>

@@ -19,4 +19,10 @@ export declare global {
     gridRowHeights: React.RefObject;
     gridOffsetFromTop: React.RefObject;
   }
+  interface MirrorData {
+    mx: number;
+    my: number;
+    top: number;
+    left: number;
+  }
 }
