@@ -16,6 +16,7 @@ export declare global {
     containerRef: React.RefObject<HTMLDivElement>;
   }
   interface MirrorData {
+    originalIndex: number;
     mx: number;
     my: number;
     top: number;

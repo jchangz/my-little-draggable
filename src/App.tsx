@@ -1,8 +1,9 @@
 import { useRef, useState } from "react";
-import { useSpring, useSprings, a } from "@react-spring/web";
+import { useSprings, a } from "@react-spring/web";
 import { useDrag } from "@use-gesture/react";
 import { swap } from "./helpers/swap";
 import { useCalculations } from "./helpers/useCalculations";
+import useMirror from "./hooks/useMirror";
 import "./App.css";
 
 function App() {
@@ -10,15 +11,21 @@ function App() {
   const [order, setOrder] = useState<Array<number>>(
     new Array(numberOfItems).fill(0).map((...[, i]) => i)
   );
-  const [showMirror, setShowMirror] = useState(true);
-  const [mirrorIndex, setMirrorIndex] = useState(false);
-
   const currentIndexPosition = useRef(0);
   const thisIndex = useRef(0);
 
   // DOM references
   const boundsRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+
+  const {
+    mirrorIndex,
+    setMirrorIndex,
+    showMirror,
+    mirror,
+    mirrorApi,
+    toggleMirror,
+  } = useMirror();
 
   const {
     calcNewIndex,
@@ -33,7 +40,6 @@ function App() {
     containerRef,
   });
 
-  const [mirror, mirrorApi] = useSpring(() => ({}));
   const [springs, api] = useSprings(numberOfItems, () => ({
     x: 0,
     y: 0,
@@ -98,10 +104,6 @@ function App() {
       preventDefault: true,
     }
   );
-
-  function toggleMirror() {
-    setShowMirror((prev) => !prev);
-  }
 
   return (
     <>
