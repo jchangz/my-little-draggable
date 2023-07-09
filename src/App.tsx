@@ -3,7 +3,6 @@ import { useSpring, useSprings, a } from "@react-spring/web";
 import { useDrag } from "@use-gesture/react";
 import { swap } from "./helpers/swap";
 import { useCalculations } from "./helpers/useCalculations";
-import { animateWithClone, animateWithoutClone } from "./dragGesture";
 import "./App.css";
 
 function App() {
@@ -20,27 +19,21 @@ function App() {
   // DOM references
   const boundsRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
-  const mirrorRef = useRef<HTMLDivElement>(null);
 
   const {
-    newCoordinates,
-    tempCoordinates,
     calcNewIndex,
     initCoordinates,
     setCoordinates,
     setNewPosition,
+    animateWithClone,
+    animateWithoutClone,
+    animateMirror,
   } = useCalculations({
     order,
     containerRef,
   });
 
-  const [mirror, mirrorApi] = useSpring(
-    ({ mx, my, top, left }: MirrorData) => ({
-      to: { x: mx, y: my, top: top, left: left },
-    }),
-    []
-  );
-
+  const [mirror, mirrorApi] = useSpring(() => ({}));
   const [springs, api] = useSprings(numberOfItems, () => ({
     x: 0,
     y: 0,
@@ -69,13 +62,8 @@ function App() {
       }
 
       if (showMirror && currentTarget instanceof HTMLElement) {
-        mirrorApi.start({
-          x: newCoordinates[originalIndex].x + mx,
-          y: newCoordinates[originalIndex].y + my,
-          top: currentTarget.offsetTop,
-          left: currentTarget.offsetLeft,
-          immediate: true,
-        });
+        const { offsetTop: top, offsetLeft: left } = currentTarget;
+        mirrorApi.start(animateMirror({ originalIndex, top, left, mx, my }));
       }
 
       const newIndex = calcNewIndex({ originalIndex, mx, my });
@@ -89,40 +77,13 @@ function App() {
         thisIndex.current = newIndex;
       }
 
-      if (showMirror)
-        api.start(
-          animateWithClone({
-            newCoordinates,
-            tempCoordinates,
-            originalIndex,
-            down,
-          })
-        );
-      else
-        api.start(
-          animateWithoutClone({
-            newCoordinates,
-            tempCoordinates,
-            originalIndex,
-            down,
-            mx,
-            my,
-          })
-        );
+      if (showMirror) api.start(animateWithClone({ originalIndex, down }));
+      else api.start(animateWithoutClone({ originalIndex, down, mx, my }));
 
       // If user drags and releases beyond the velocity limit
       if (!active && thisIndex.current !== newIndex) {
         setCoordinates({ currentIndexPosition, newIndex });
-        api.start(
-          animateWithoutClone({
-            newCoordinates,
-            tempCoordinates,
-            originalIndex,
-            down,
-            mx,
-            my,
-          })
-        );
+        api.start(animateWithoutClone({ originalIndex, down, mx, my }));
       }
 
       if (!active && currentIndexPosition.current !== newIndex) {
@@ -171,7 +132,6 @@ function App() {
           <a.div
             className={`item-${mirrorIndex}`}
             id="item-mirror"
-            ref={mirrorRef}
             style={mirror}
           >
             <div className="drag-item">
