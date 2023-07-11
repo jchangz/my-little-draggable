@@ -92,6 +92,7 @@ export function useCalculations({ order, containerRef }: CalculationsData) {
   };
 
   const setXCoordinates = (indexPosition: number, newIndex: number) => {
+    const width = columnWidth.current;
     // Find the indexes that need to be updated based on the from and to indexes
     const indexesToUpdate = range(newIndex, indexPosition);
     // Check the direction we need to shift the indexes
@@ -104,17 +105,13 @@ export function useCalculations({ order, containerRef }: CalculationsData) {
         if (direction > 0) {
           const shiftDown = !((thisIndex + 1) % maxCols);
           tempCoordinates.current[order[thisIndex]] = {
-            x: shiftDown
-              ? -(maxCols - 1) * columnWidth.current
-              : columnWidth.current,
+            x: shiftDown ? -(maxCols - 1) * width : width,
             y: shiftDown ? currentMaxHeightPerRow[thisIndexRow] : 0,
           };
         } else if (direction < 0) {
           const shiftUp = !(thisIndex % maxCols);
           tempCoordinates.current[order[thisIndex]] = {
-            x: shiftUp
-              ? (maxCols - 1) * columnWidth.current
-              : -columnWidth.current,
+            x: shiftUp ? (maxCols - 1) * width : -width,
             y: shiftUp ? -currentMaxHeightPerRow[thisIndexRow - 1] : 0,
           };
         }
@@ -128,7 +125,7 @@ export function useCalculations({ order, containerRef }: CalculationsData) {
         newCol.current = oddNumberOfIndex - 1;
 
       tempCoordinates.current[order[indexPosition]] = {
-        x: (newCol.current - currentCol.current) * columnWidth.current,
+        x: (newCol.current - currentCol.current) * width,
         y:
           newRow !== currentRow
             ? calculateHeightShift(

@@ -14,9 +14,10 @@ function App() {
   const currentIndexPosition = useRef(0);
   const thisIndex = useRef(0);
 
-  // DOM references
-  const boundsRef = useRef<HTMLDivElement>(null);
+  // Reference to obtain necessary grid measurements in useCalculations
   const containerRef = useRef<HTMLDivElement>(null);
+  // Element used to set boundary on useDrag gesture
+  const boundsRef = useRef<HTMLDivElement>(null);
 
   const {
     mirrorIndex,
@@ -40,7 +41,7 @@ function App() {
     containerRef,
   });
 
-  const [springs, api] = useSprings(numberOfItems, () => ({
+  const [drag, dragApi] = useSprings(numberOfItems, () => ({
     x: 0,
     y: 0,
     opacity: 1,
@@ -83,13 +84,13 @@ function App() {
         thisIndex.current = newIndex;
       }
 
-      if (showMirror) api.start(animateWithClone({ originalIndex, down }));
-      else api.start(animateWithoutClone({ originalIndex, down, mx, my }));
+      if (showMirror) dragApi.start(animateWithClone({ originalIndex, down }));
+      else dragApi.start(animateWithoutClone({ originalIndex, down, mx, my }));
 
       // If user drags and releases beyond the velocity limit
       if (!active && thisIndex.current !== newIndex) {
         setCoordinates({ currentIndexPosition, newIndex });
-        api.start(animateWithoutClone({ originalIndex, down, mx, my }));
+        dragApi.start(animateWithoutClone({ originalIndex, down, mx, my }));
       }
 
       if (!active && currentIndexPosition.current !== newIndex) {
@@ -110,7 +111,7 @@ function App() {
       <button onClick={toggleMirror}>Enable Mirror</button>
       <div className="parent" ref={boundsRef}>
         <div className="container" ref={containerRef}>
-          {springs.map(({ x, y, opacity, zIndex, shadow }, i) => (
+          {drag.map(({ x, y, opacity, zIndex, shadow }, i) => (
             <a.div
               {...bind(i)}
               className={`item-${i}`}
