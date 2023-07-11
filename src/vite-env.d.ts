@@ -6,13 +6,14 @@ export {};
 
 export declare global {
   interface RowData {
-    [id: number]: Array<number>;
+    [id: number]: number[];
   }
   interface CoordinateData {
     [id: string]: number;
   }
   interface CalculationsData {
-    order: Array<number>;
+    order: number[];
+    orderByKey: number[];
     containerRef: React.RefObject<HTMLDivElement>;
   }
   interface MirrorData {

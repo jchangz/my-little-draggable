@@ -7,7 +7,11 @@ import {
   calculateNewMaxHeights,
 } from "../calculations";
 
-export function useCalculations({ order, containerRef }: CalculationsData) {
+export function useCalculations({
+  order,
+  orderByKey,
+  containerRef,
+}: CalculationsData) {
   const [maxCols, setMaxCols] = useState(3);
   const [gridGap, setGridGap] = useState(0);
   const maxRows = Math.ceil(order.length / maxCols);
@@ -65,7 +69,7 @@ export function useCalculations({ order, containerRef }: CalculationsData) {
     );
 
     setNewCoordinates([...Array(order.length)].map(() => ({ x: 0, y: 0 })));
-  }, [maxRows, containerRef, order.length]);
+  }, [orderByKey, maxRows, containerRef, order.length]);
 
   const initCoordinates = (index: number) => {
     currentRow.current = Math.floor(index / maxCols);

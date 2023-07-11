@@ -7,10 +7,16 @@ import useMirror from "./hooks/useMirror";
 import "./App.css";
 
 function App() {
-  const numberOfItems = 10;
-  const [order, setOrder] = useState<Array<number>>(
-    new Array(numberOfItems).fill(0).map((...[, i]) => i)
-  );
+  const keys = ["D", "R", "A", "G", "g", "a", "B", "L", "E"];
+  const defaultOrderArr = [...Array(keys.length)].map((_, i) => i);
+
+  // The order of items based on grid position, resets on re-render
+  const [order, setOrder] = useState(defaultOrderArr);
+  // The order of items based on item key, keeping correct order on re-render
+  const [orderByKey, setOrderByKey] = useState(defaultOrderArr);
+  // Temp store of grid position order used to update orderByKey
+  const tempOrder = useRef(defaultOrderArr);
+
   const currentIndexPosition = useRef(0);
   const thisIndex = useRef(0);
 
@@ -38,10 +44,11 @@ function App() {
     animateMirror,
   } = useCalculations({
     order,
+    orderByKey,
     containerRef,
   });
 
-  const [drag, dragApi] = useSprings(numberOfItems, () => ({
+  const [drag, dragApi] = useSprings(keys.length, () => ({
     x: 0,
     y: 0,
     opacity: 1,
@@ -62,8 +69,9 @@ function App() {
       if (first) {
         if (showMirror) setMirrorIndex(originalIndex);
 
-        currentIndexPosition.current = order.indexOf(originalIndex);
-        thisIndex.current = currentIndexPosition.current;
+        const currentIndex = order.indexOf(originalIndex);
+        currentIndexPosition.current = currentIndex;
+        thisIndex.current = currentIndex;
 
         initCoordinates(currentIndexPosition.current);
       }
@@ -96,6 +104,11 @@ function App() {
       if (!active && currentIndexPosition.current !== newIndex) {
         setNewPosition();
         setOrder(swap(order, currentIndexPosition.current, newIndex));
+        tempOrder.current = swap(
+          tempOrder.current,
+          currentIndexPosition.current,
+          newIndex
+        );
       }
 
       if (!active && showMirror) setMirrorIndex(false);
@@ -106,15 +119,27 @@ function App() {
     }
   );
 
+  function toggleRender() {
+    setOrderByKey(tempOrder.current);
+    setOrder(defaultOrderArr);
+    dragApi.start(() => ({
+      x: 0,
+      y: 0,
+      immediate: true,
+    }));
+  }
+
   return (
     <>
       <button onClick={toggleMirror}>Enable Mirror</button>
+      <button onClick={toggleRender}>Rerender</button>
       <div className="parent" ref={boundsRef}>
         <div className="container" ref={containerRef}>
           {drag.map(({ x, y, opacity, zIndex, shadow }, i) => (
             <a.div
               {...bind(i)}
-              className={`item-${i}`}
+              className={`item-${orderByKey[i]}`}
+              key={`item-${orderByKey[i]}`}
               style={{
                 x,
                 y,
@@ -133,7 +158,7 @@ function App() {
         </div>
         {showMirror && mirrorIndex !== false && (
           <a.div
-            className={`item-${mirrorIndex}`}
+            className={`item-${orderByKey[mirrorIndex]}`}
             id="item-mirror"
             style={mirror}
           >
