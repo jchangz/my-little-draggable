@@ -2,7 +2,8 @@ import React, { useState, useRef, useEffect } from "react";
 import { clamp, range } from "lodash";
 import { swap } from "./swap";
 import {
-  calculateRowHeights,
+  calculateMaxHeightPerRow,
+  calculateBottomPerRow,
   calculateHeightShift,
   calculateNewMaxHeights,
 } from "../calculations";
@@ -26,12 +27,18 @@ export function useCalculations({
   const gridRowHeights = useRef<number[]>([]);
   const offsetTopOfRows = useRef<number[]>([]);
   const oddNumberOfIndex = order.length % maxCols;
+  const heightSortedByOrder = order.map(
+    (index) => gridRowHeights.current[index] || 0
+  );
 
-  const { currentMaxHeightPerRow, currentRowBottom } = calculateRowHeights(
-    order,
-    maxRows,
+  const currentMaxHeightPerRow = calculateMaxHeightPerRow(
     maxCols,
-    gridRowHeights.current,
+    maxRows,
+    heightSortedByOrder
+  );
+
+  const currentRowBottom = calculateBottomPerRow(
+    currentMaxHeightPerRow,
     gridOffsetFromTop.current
   );
 

@@ -1,49 +1,64 @@
 import { range } from "lodash";
 
-export const calculateRowHeights = (
-  order: number[],
-  maxRows: number,
+/**
+ * Calculate the max height of each row
+ *
+ * @param maxCols
+ * @param maxRows
+ * @param heightArr - heights of each index sorted by order
+ * @returns
+ */
+export const calculateMaxHeightPerRow = (
   maxCols: number,
-  heightArr: number[],
-  offsetFromTop: number
+  maxRows: number,
+  heightArr: number[]
 ) => {
-  if (!heightArr.length)
-    return { currentMaxHeightPerRow: [], currentRowBottom: [] };
-  const heightsSortedByOrder = order.map((val) => heightArr[val]);
   const currentMaxHeightPerRow = [];
+
   for (let i = 0; i < maxRows; i += 1) {
-    const slice = heightsSortedByOrder.slice(i * maxCols, (i + 1) * maxCols);
+    const slice = heightArr.slice(i * maxCols, (i + 1) * maxCols);
     currentMaxHeightPerRow.push(Math.max(...slice));
   }
 
-  const currentRowBottom = currentMaxHeightPerRow.reduce(
-    (resultArray: number[], item, i) => {
-      const newArray = resultArray;
-      const val = item + (i === 0 ? offsetFromTop : resultArray[i - 1]);
-      newArray.push(val);
-
-      return newArray;
-    },
-    []
-  );
-
-  return { currentMaxHeightPerRow, currentRowBottom };
+  return currentMaxHeightPerRow;
 };
 
+/**
+ * Calculate the distance to bottom of each row
+ *
+ * @param rowHeightArr - max height of each row
+ * @param offsetFromTop - distance from top to first row
+ * @returns Array of distance to bottom of each row
+ */
+export const calculateBottomPerRow = (
+  rowHeightArr: number[],
+  offsetFromTop: number
+) => {
+  return rowHeightArr.reduce((resultArray: number[], item, i) => {
+    resultArray.push(item + (i === 0 ? offsetFromTop : resultArray[i - 1]));
+    return resultArray;
+  }, []);
+};
+
+/**
+ * Calculate y-direction shift of the selected index
+ *
+ * @param newRow - row being dragged to
+ * @param curRow - row being dragged from
+ * @param rowHeight - array of each row height
+ * @returns The total sum of row heights
+ */
 export const calculateHeightShift = (
   newRow: number,
-  currentRow: number,
-  originalHeightArr: Array<number>
-) => {
-  const heightToShiftValue = range(newRow, currentRow)
-    .map((rr) => {
-      const sign = newRow > currentRow ? 1 : -1;
-      const adjust = newRow > currentRow ? rr - 1 : rr;
-      return sign * originalHeightArr[Math.abs(adjust)];
+  curRow: number,
+  rowHeight: number[]
+) =>
+  range(newRow, curRow)
+    .map((rowNum) => {
+      if (newRow > curRow) return rowHeight[Math.abs(rowNum - 1)];
+      else return -rowHeight[rowNum];
     })
     .reduce((a, b) => a + b, 0);
-  return heightToShiftValue;
-};
 
 export const calculateNewMaxHeights = (
   order: number[],
@@ -68,6 +83,6 @@ export const calculateNewMaxHeights = (
       Math.max(...heightMap) + (i === 0 ? offsetFromTop : newRowBottom[i - 1]);
     newRowBottom.push(heightOfRow);
   }
-
+  console.log(indexSortedByRows, newRowBottom);
   return { indexSortedByRows, newRowBottom };
 };
