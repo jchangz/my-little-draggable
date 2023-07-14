@@ -3,9 +3,8 @@ import { clamp, range } from "lodash";
 import { swap } from "./swap";
 import {
   calculateMaxHeightPerRow,
-  calculateBottomPerRow,
+  calculateRowHeightDiff,
   calculateHeightShift,
-  calculateNewMaxHeights,
 } from "../calculations";
 
 export function useCalculations({
@@ -35,11 +34,6 @@ export function useCalculations({
     maxCols,
     maxRows,
     heightSortedByOrder
-  );
-
-  const currentRowBottom = calculateBottomPerRow(
-    currentMaxHeightPerRow,
-    gridOffsetFromTop.current
   );
 
   const currentCol = useRef(0);
@@ -151,23 +145,29 @@ export function useCalculations({
 
   const setYCoordinates = (indexPosition: number, newIndex: number) => {
     const newOrder = swap(order, indexPosition, newIndex);
-    const { indexSortedByRows, newRowBottom } = calculateNewMaxHeights(
-      newOrder,
+    // Get max heights of each row based on the new order
+    const newMaxHeightPerRow = calculateMaxHeightPerRow(
       maxCols,
       maxRows,
-      gridRowHeights.current,
-      gridOffsetFromTop.current
+      newOrder.map((index) => gridRowHeights.current[index])
     );
-    const length = currentMaxHeightPerRow.length;
-    // Shift all items rows with height differences
-    for (let i = 0, h = newRowBottom.length; i < h; i += 1) {
-      const heightDiff = newRowBottom[i] - currentRowBottom[i];
+    // Get the y-coordinates to shift the row heights based on the new order
+    const { rowHeightDiff } = calculateRowHeightDiff(
+      currentMaxHeightPerRow,
+      newMaxHeightPerRow
+    );
+    const length = rowHeightDiff.length;
 
-      if (heightDiff && i + 1 < length) {
-        const nextIndex = indexSortedByRows[i + 1];
-        for (let j = 0, k = nextIndex.length; j < k; j += 1) {
-          // Add new height difference to each index in the row
-          tempCoordinates.current[nextIndex[j]].y += heightDiff;
+    for (let i = 0, h = length; i < h; i += 1) {
+      // Shift the row after i
+      if (rowHeightDiff[i] && i + 1 < length) {
+        const indexesToShift = newOrder.slice(
+          (i + 1) * maxCols,
+          (i + 2) * maxCols
+        );
+        // Add new height difference to each index in the row
+        for (let j = 0, k = indexesToShift.length; j < k; j += 1) {
+          tempCoordinates.current[indexesToShift[j]].y += rowHeightDiff[i];
         }
       }
     }

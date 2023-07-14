@@ -24,20 +24,25 @@ export const calculateMaxHeightPerRow = (
 };
 
 /**
- * Calculate the distance to bottom of each row
+ * Calculate the y-shift of each row
  *
- * @param rowHeightArr - max height of each row
- * @param offsetFromTop - distance from top to first row
- * @returns Array of distance to bottom of each row
+ * @param currentHeights - array of max heights per row of original order
+ * @param newHeights - array of max heights per row of new order
+ * @returns Array of y-translate values for rows that need to be shifted
  */
-export const calculateBottomPerRow = (
-  rowHeightArr: number[],
-  offsetFromTop: number
+export const calculateRowHeightDiff = (
+  currentHeights: number[],
+  newHeights: number[]
 ) => {
-  return rowHeightArr.reduce((resultArray: number[], item, i) => {
-    resultArray.push(item + (i === 0 ? offsetFromTop : resultArray[i - 1]));
-    return resultArray;
-  }, []);
+  const rowHeightDiff: number[] = [];
+  for (let i = 0; i < currentHeights.length; i += 1) {
+    if (i === 0) rowHeightDiff.push(newHeights[i] - currentHeights[i]);
+    else
+      rowHeightDiff.push(
+        newHeights[i] - currentHeights[i] + rowHeightDiff[i - 1]
+      );
+  }
+  return { rowHeightDiff };
 };
 
 /**
@@ -59,30 +64,3 @@ export const calculateHeightShift = (
       else return -rowHeight[rowNum];
     })
     .reduce((a, b) => a + b, 0);
-
-export const calculateNewMaxHeights = (
-  order: number[],
-  maxCols: number,
-  maxRows: number,
-  rowHeights: number[],
-  offsetFromTop: number
-) => {
-  const indexSortedByRows = [];
-  const newRowBottom = [];
-
-  for (let i = 0; i < maxRows; i += 1) {
-    const slice = order.slice(i * maxCols, (i + 1) * maxCols);
-    indexSortedByRows.push(slice);
-
-    const heightMap = [];
-    for (let i = 0, j = slice.length; i < j; i += 1) {
-      heightMap.push(rowHeights[slice[i]]);
-    }
-
-    const heightOfRow: number =
-      Math.max(...heightMap) + (i === 0 ? offsetFromTop : newRowBottom[i - 1]);
-    newRowBottom.push(heightOfRow);
-  }
-  console.log(indexSortedByRows, newRowBottom);
-  return { indexSortedByRows, newRowBottom };
-};
