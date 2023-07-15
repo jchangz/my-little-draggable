@@ -26,14 +26,11 @@ export function useCalculations({
   const gridRowHeights = useRef<number[]>([]);
   const offsetTopOfRows = useRef<number[]>([]);
   const oddNumberOfIndex = order.length % maxCols;
-  const heightSortedByOrder = order.map(
-    (index) => gridRowHeights.current[index] || 0
-  );
-
   const currentMaxHeightPerRow = calculateMaxHeightPerRow(
+    order,
     maxCols,
     maxRows,
-    heightSortedByOrder
+    gridRowHeights.current
   );
 
   const currentCol = useRef(0);
@@ -147,9 +144,10 @@ export function useCalculations({
     const newOrder = swap(order, indexPosition, newIndex);
     // Get max heights of each row based on the new order
     const newMaxHeightPerRow = calculateMaxHeightPerRow(
+      newOrder,
       maxCols,
       maxRows,
-      newOrder.map((index) => gridRowHeights.current[index])
+      gridRowHeights.current
     );
     // Get the y-coordinates to shift the row heights based on the new order
     const { rowHeightDiff } = calculateRowHeightDiff(

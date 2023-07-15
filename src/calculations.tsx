@@ -9,14 +9,16 @@ import { range } from "lodash";
  * @returns
  */
 export const calculateMaxHeightPerRow = (
+  order: number[],
   maxCols: number,
   maxRows: number,
   heightArr: number[]
 ) => {
   const currentMaxHeightPerRow = [];
+  const heightSortedByOrder = order.map((index) => heightArr[index]);
 
   for (let i = 0; i < maxRows; i += 1) {
-    const slice = heightArr.slice(i * maxCols, (i + 1) * maxCols);
+    const slice = heightSortedByOrder.slice(i * maxCols, (i + 1) * maxCols);
     currentMaxHeightPerRow.push(Math.max(...slice));
   }
 
