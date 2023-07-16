@@ -1,17 +1,39 @@
 import React, { useEffect, useRef } from "react";
+import { calculateMaxHeightPerRow } from "../calculations";
 
 function useGridProps({
   containerRef,
+  order,
   orderByKey,
+  maxCols,
   maxRows,
 }: {
   containerRef: React.RefObject<HTMLDivElement>;
+  order: number[];
   orderByKey: number[];
+  maxCols: number;
   maxRows: number;
 }) {
+  const offsetTop = useRef(0);
   const columnWidth = useRef(0);
   const gridRowHeights = useRef<number[]>([]);
-  const offsetTopOfRows = useRef<number[]>([]);
+  const currentMaxHeightPerRow = calculateMaxHeightPerRow(
+    order,
+    maxCols,
+    maxRows,
+    gridRowHeights.current
+  );
+  // Skip the last item as the first row starts at the offsetTop of the grid
+  const offsetTopOfRows = currentMaxHeightPerRow.slice(0, -1).reduce(
+    (resultArray: number[], item, i) => {
+      const newArray = resultArray;
+      const val = item + resultArray[i];
+      newArray.push(val);
+
+      return newArray;
+    },
+    [offsetTop.current]
+  );
 
   useEffect(() => {
     if (containerRef.current) {
@@ -37,10 +59,7 @@ function useGridProps({
       });
 
       gridRowHeights.current = heightArr;
-
-      offsetTopOfRows.current = [...Array(maxRows)].fill(
-        containerRef.current.offsetTop
-      );
+      offsetTop.current = containerRef.current.offsetTop;
     }
   }, [orderByKey, maxRows, containerRef]);
 
@@ -48,6 +67,7 @@ function useGridProps({
     columnWidth,
     gridRowHeights,
     offsetTopOfRows,
+    currentMaxHeightPerRow,
   };
 }
 
