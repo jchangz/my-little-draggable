@@ -6,6 +6,7 @@ import {
   calculateRowHeightDiff,
   calculateHeightShift,
 } from "../calculations";
+import useGridProps from "../hooks/useGridProps";
 
 export function useCalculations({
   order,
@@ -20,11 +21,12 @@ export function useCalculations({
   const tempCoordinates = useRef(
     [...Array(order.length)].map(() => ({ x: 0, y: 0 }))
   );
+  const { columnWidth, gridRowHeights, offsetTopOfRows } = useGridProps({
+    containerRef,
+    orderByKey,
+    maxRows,
+  });
 
-  const columnWidth = useRef(0);
-  const gridOffsetFromTop = useRef(0);
-  const gridRowHeights = useRef<number[]>([]);
-  const offsetTopOfRows = useRef<number[]>([]);
   const oddNumberOfIndex = order.length % maxCols;
   const currentMaxHeightPerRow = calculateMaxHeightPerRow(
     order,
@@ -39,35 +41,11 @@ export function useCalculations({
   const newRow = useRef(0);
 
   useEffect(() => {
-    gridOffsetFromTop.current = containerRef.current?.offsetTop || 0;
-
-    if (containerRef.current) {
-      const itemArr = containerRef.current.children;
-      const heightArr: number[] = [];
-      if (itemArr.length < 1) return;
-
-      [...itemArr].forEach((item, i) => {
-        const { width, height } = item.getBoundingClientRect();
-
-        if (i === 0) columnWidth.current = width;
-
-        heightArr.push(height);
-      });
-
-      document.documentElement.style.setProperty(
-        "--col-width",
-        columnWidth.current + "px"
-      );
-
-      gridRowHeights.current = heightArr;
-    }
-
-    offsetTopOfRows.current = [...Array(maxRows)].fill(
-      gridOffsetFromTop.current
+    // Reset coordinates on re-render
+    setNewCoordinates(
+      [...Array(orderByKey.length)].map(() => ({ x: 0, y: 0 }))
     );
-
-    setNewCoordinates([...Array(order.length)].map(() => ({ x: 0, y: 0 })));
-  }, [orderByKey, maxRows, containerRef, order.length]);
+  }, [orderByKey, maxRows]);
 
   const initCoordinates = (index: number) => {
     currentRow.current = Math.floor(index / maxCols);
