@@ -1,5 +1,8 @@
 import React, { useEffect, useRef } from "react";
-import { calculateMaxHeightPerRow } from "../calculations";
+import {
+  calculateMaxHeightPerRow,
+  calculateRowHeightDiff,
+} from "../calculations";
 
 function useGridProps({
   containerRef,
@@ -63,11 +66,29 @@ function useGridProps({
     }
   }, [orderByKey, maxRows, containerRef]);
 
+  const getRowHeightDiff = (order: number[]) => {
+    // Get max heights of each row based on the new order
+    const newMaxHeightPerRow = calculateMaxHeightPerRow(
+      order,
+      maxCols,
+      maxRows,
+      gridRowHeights.current
+    );
+    // Get the y-coordinates to shift the row heights based on the new order
+    const { rowHeightDiff } = calculateRowHeightDiff(
+      currentMaxHeightPerRow,
+      newMaxHeightPerRow
+    );
+
+    return { rowHeightDiff };
+  };
+
   return {
     columnWidth,
     gridRowHeights,
     offsetTopOfRows,
     currentMaxHeightPerRow,
+    getRowHeightDiff,
   };
 }
 

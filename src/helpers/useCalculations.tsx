@@ -1,11 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { clamp, range } from "lodash";
 import { swap } from "./swap";
-import {
-  calculateMaxHeightPerRow,
-  calculateRowHeightDiff,
-  calculateHeightShift,
-} from "../calculations";
+import { calculateHeightShift } from "../calculations";
 import useGridProps from "../hooks/useGridProps";
 
 export function useCalculations({
@@ -26,6 +22,7 @@ export function useCalculations({
     gridRowHeights,
     offsetTopOfRows,
     currentMaxHeightPerRow,
+    getRowHeightDiff,
   } = useGridProps({
     containerRef,
     order,
@@ -115,23 +112,11 @@ export function useCalculations({
 
   const setYCoordinates = (indexPosition: number, newIndex: number) => {
     const newOrder = swap(order, indexPosition, newIndex);
-    // Get max heights of each row based on the new order
-    const newMaxHeightPerRow = calculateMaxHeightPerRow(
-      newOrder,
-      maxCols,
-      maxRows,
-      gridRowHeights.current
-    );
-    // Get the y-coordinates to shift the row heights based on the new order
-    const { rowHeightDiff } = calculateRowHeightDiff(
-      currentMaxHeightPerRow,
-      newMaxHeightPerRow
-    );
-    const length = rowHeightDiff.length;
+    const { rowHeightDiff } = getRowHeightDiff(newOrder);
 
-    for (let i = 0, h = length; i < h; i += 1) {
+    for (let i = 0; i < maxRows; i += 1) {
       // Shift the row after i
-      if (rowHeightDiff[i] && i + 1 < length) {
+      if (rowHeightDiff[i] && i + 1 < maxRows) {
         const indexesToShift = newOrder.slice(
           (i + 1) * maxCols,
           (i + 2) * maxCols
@@ -158,7 +143,8 @@ export function useCalculations({
       tempCoordinates.current[i].y = 0;
     }
     setXCoordinates(indexPosition, newIndex);
-    if (newRow !== currentRow) setYCoordinates(indexPosition, newIndex);
+    if (newRow.current !== currentRow.current)
+      setYCoordinates(indexPosition, newIndex);
   };
 
   const calcNewCol = ({ mx }: { mx: number }) => {
