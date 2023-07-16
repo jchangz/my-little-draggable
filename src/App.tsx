@@ -79,11 +79,6 @@ function App() {
         initCoordinates(currentIndexPosition.current);
       }
 
-      if (showMirror && currentTarget instanceof HTMLElement) {
-        const { offsetTop: top, offsetLeft: left } = currentTarget;
-        mirrorApi.start(animateMirror({ originalIndex, top, left, mx, my }));
-      }
-
       const newIndex = calcNewIndex({ originalIndex, mx, my });
 
       if (
@@ -95,8 +90,12 @@ function App() {
         thisIndex.current = newIndex;
       }
 
-      if (showMirror) dragApi.start(animateWithClone({ originalIndex, down }));
-      else dragApi.start(animateWithoutClone({ originalIndex, down, mx, my }));
+      if (showMirror && currentTarget instanceof HTMLElement) {
+        const { offsetTop: top, offsetLeft: left } = currentTarget;
+        mirrorApi.start(animateMirror({ originalIndex, top, left, mx, my }));
+        dragApi.start(animateWithClone({ originalIndex, down }));
+      } else
+        dragApi.start(animateWithoutClone({ originalIndex, down, mx, my }));
 
       // If user drags and releases beyond the velocity limit
       if (!active && thisIndex.current !== newIndex) {
