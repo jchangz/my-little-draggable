@@ -1,9 +1,10 @@
-import { useRef, useState } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useSprings, a } from "@react-spring/web";
 import { useDrag } from "@use-gesture/react";
 import { swap } from "./helpers/swap";
 import { useCalculations } from "./helpers/useCalculations";
 import useMirror from "./hooks/useMirror";
+import useWindowSize from "./hooks/useWindowSize";
 import "./App.css";
 
 function App() {
@@ -24,6 +25,8 @@ function App() {
   const containerRef = useRef<HTMLDivElement>(null);
   // Element used to set boundary on useDrag gesture
   const boundsRef = useRef<HTMLDivElement>(null);
+  // Hook to re-render on window size change
+  const windowSize = useWindowSize();
 
   const {
     mirrorIndex,
@@ -119,15 +122,19 @@ function App() {
     }
   );
 
-  function toggleRender() {
+  const toggleRender = useCallback(() => {
     setOrderByKey(tempOrder.current);
-    setOrder(defaultOrderArr);
+    setOrder([...Array(keys.length)].map((_, i) => i));
     dragApi.start(() => ({
       x: 0,
       y: 0,
       immediate: true,
     }));
-  }
+  }, [dragApi, keys.length]);
+
+  useEffect(() => {
+    toggleRender();
+  }, [windowSize, toggleRender]);
 
   return (
     <>
