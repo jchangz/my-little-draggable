@@ -1,8 +1,8 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useSprings, a } from "@react-spring/web";
 import { useDrag } from "@use-gesture/react";
-import { swap } from "./helpers/swap";
-import { useCalculations } from "./helpers/useCalculations";
+import { swap } from "./hooks/swap";
+import { useCalculations } from "./hooks/useCalculations";
 import useMirror from "./hooks/useMirror";
 import useAnimation from "./hooks/useAnimation";
 import useWindowSize from "./hooks/useWindowSize";
@@ -49,7 +49,6 @@ function App() {
     order,
     orderByKey,
     containerRef,
-    windowSize
   });
 
   const { animateWithClone, animateWithoutClone } = useAnimation({
@@ -136,7 +135,6 @@ function App() {
   );
 
   const toggleRender = useCallback(() => {
-    console.log("TOGGLE");
     setOrderByKey(tempOrder.current);
     setOrder([...Array(keys.length)].map((_, i) => i));
     setNewCoordinates([...Array(keys.length)].map(() => ({ x: 0, y: 0 })));
@@ -149,11 +147,8 @@ function App() {
 
   useEffect(() => {
     toggleRender();
-
-    console.log("RENDER", );
   }, [windowSize, toggleRender]);
-  newCoordinates.forEach((item) => console.log(item));
-  tempCoordinates.current.forEach((item) => console.log(item));
+
   return (
     <>
       <button onClick={toggleMirror}>Enable Mirror</button>
