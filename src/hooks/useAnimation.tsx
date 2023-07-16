@@ -46,18 +46,9 @@ function useAnimation({
             immediate: false,
           };
 
-  const animateMirror = ({ originalIndex, top, left, mx, my }: MirrorData) => ({
-    x: newCoordinates[originalIndex].x + mx,
-    y: newCoordinates[originalIndex].y + my,
-    top: top,
-    left: left,
-    immediate: true,
-  });
-
   return {
     animateWithClone,
     animateWithoutClone,
-    animateMirror,
   };
 }
 

@@ -4,6 +4,7 @@ import { useDrag } from "@use-gesture/react";
 import { swap } from "./helpers/swap";
 import { useCalculations } from "./helpers/useCalculations";
 import useMirror from "./hooks/useMirror";
+import useAnimation from "./hooks/useAnimation";
 import useWindowSize from "./hooks/useWindowSize";
 import "./App.css";
 
@@ -18,10 +19,12 @@ function App() {
   // Temp store of grid position order used to update orderByKey
   const tempOrder = useRef(defaultOrderArr);
 
+  const [newCoordinates, setNewCoordinates] = useState<CoordinateData[]>([]);
+
   const currentIndexPosition = useRef(0);
   const thisIndex = useRef(0);
 
-  // Reference to obtain necessary grid measurements in useCalculations
+  // Reference to obtain necessary grid measurements
   const containerRef = useRef<HTMLDivElement>(null);
   // Element used to set boundary on useDrag gesture
   const boundsRef = useRef<HTMLDivElement>(null);
@@ -30,25 +33,28 @@ function App() {
 
   const {
     mirrorIndex,
-    setMirrorIndex,
     showMirror,
     mirror,
-    mirrorApi,
+    setMirrorIndex,
+    animateMirror,
     toggleMirror,
-  } = useMirror();
+  } = useMirror({ newCoordinates });
 
   const {
-    calcNewIndex,
-    initCoordinates,
-    setCoordinates,
-    setNewPosition,
-    animateWithClone,
-    animateWithoutClone,
-    animateMirror,
+    tempCoordinates,
+    setCurrentRowCol,
+    calculateNewIndex,
+    setTempCoordinates,
   } = useCalculations({
     order,
     orderByKey,
     containerRef,
+    windowSize
+  });
+
+  const { animateWithClone, animateWithoutClone } = useAnimation({
+    newCoordinates,
+    tempCoordinates,
   });
 
   const [drag, dragApi] = useSprings(keys.length, () => ({
@@ -76,35 +82,43 @@ function App() {
         currentIndexPosition.current = currentIndex;
         thisIndex.current = currentIndex;
 
-        initCoordinates(currentIndexPosition.current);
+        setCurrentRowCol(currentIndexPosition.current);
       }
 
-      const newIndex = calcNewIndex({ originalIndex, mx, my });
+      const newIndex = calculateNewIndex({ originalIndex, mx, my });
 
       if (
         thisIndex.current !== newIndex &&
         velocity[0] < 0.7 &&
         velocity[1] < 0.7
       ) {
-        setCoordinates({ currentIndexPosition, newIndex });
+        setTempCoordinates({ currentIndexPosition, newIndex });
         thisIndex.current = newIndex;
       }
 
       if (showMirror && currentTarget instanceof HTMLElement) {
         const { offsetTop: top, offsetLeft: left } = currentTarget;
-        mirrorApi.start(animateMirror({ originalIndex, top, left, mx, my }));
+        animateMirror({ originalIndex, top, left, mx, my });
         dragApi.start(animateWithClone({ originalIndex, down }));
       } else
         dragApi.start(animateWithoutClone({ originalIndex, down, mx, my }));
 
       // If user drags and releases beyond the velocity limit
       if (!active && thisIndex.current !== newIndex) {
-        setCoordinates({ currentIndexPosition, newIndex });
+        setTempCoordinates({ currentIndexPosition, newIndex });
         dragApi.start(animateWithoutClone({ originalIndex, down, mx, my }));
       }
 
       if (!active && currentIndexPosition.current !== newIndex) {
-        setNewPosition();
+        const stagingCoordinates = newCoordinates;
+        for (let i = 0, j = order.length; i < j; i += 1) {
+          stagingCoordinates[i].x += tempCoordinates.current[i].x;
+          stagingCoordinates[i].y += tempCoordinates.current[i].y;
+          tempCoordinates.current[i].x = 0;
+          tempCoordinates.current[i].y = 0;
+        }
+        setNewCoordinates(stagingCoordinates);
+
         setOrder(swap(order, currentIndexPosition.current, newIndex));
         tempOrder.current = swap(
           tempOrder.current,
@@ -122,8 +136,10 @@ function App() {
   );
 
   const toggleRender = useCallback(() => {
+    console.log("TOGGLE");
     setOrderByKey(tempOrder.current);
     setOrder([...Array(keys.length)].map((_, i) => i));
+    setNewCoordinates([...Array(keys.length)].map(() => ({ x: 0, y: 0 })));
     dragApi.start(() => ({
       x: 0,
       y: 0,
@@ -133,8 +149,11 @@ function App() {
 
   useEffect(() => {
     toggleRender();
-  }, [windowSize, toggleRender]);
 
+    console.log("RENDER", );
+  }, [windowSize, toggleRender]);
+  newCoordinates.forEach((item) => console.log(item));
+  tempCoordinates.current.forEach((item) => console.log(item));
   return (
     <>
       <button onClick={toggleMirror}>Enable Mirror</button>

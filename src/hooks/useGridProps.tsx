@@ -20,6 +20,7 @@ function useGridProps({
   const offsetTop = useRef(0);
   const columnWidth = useRef(0);
   const gridRowHeights = useRef<number[]>([]);
+  const oddNumberOfIndex = order.length % maxCols;
   const currentMaxHeightPerRow = calculateMaxHeightPerRow(
     order,
     maxCols,
@@ -87,6 +88,7 @@ function useGridProps({
     columnWidth,
     gridRowHeights,
     offsetTopOfRows,
+    oddNumberOfIndex,
     currentMaxHeightPerRow,
     getRowHeightDiff,
   };

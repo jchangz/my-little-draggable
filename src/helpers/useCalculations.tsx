@@ -3,32 +3,30 @@ import { clamp, range } from "lodash";
 import { swap } from "./swap";
 import { calculateHeightShift } from "../calculations";
 import useGridProps from "../hooks/useGridProps";
-import useAnimation from "../hooks/useAnimation";
 
 export function useCalculations({
   order,
   orderByKey,
   containerRef,
 }: CalculationsData) {
+  const tempCoordinates = useRef(
+    [...Array(order.length)].map(() => ({ x: 0, y: 0 }))
+  );
+
   const [maxCols, setMaxCols] = useState(3);
   const [gridGap, setGridGap] = useState(0);
   const maxRows = Math.ceil(order.length / maxCols);
 
-  const [newCoordinates, setNewCoordinates] = useState<CoordinateData[]>([]);
-  const tempCoordinates = useRef(
-    [...Array(order.length)].map(() => ({ x: 0, y: 0 }))
-  );
-  const { animateWithClone, animateWithoutClone, animateMirror } = useAnimation(
-    {
-      newCoordinates,
-      tempCoordinates,
-    }
-  );
+  const currentCol = useRef(0);
+  const newCol = useRef(0);
+  const currentRow = useRef(0);
+  const newRow = useRef(0);
 
   const {
     columnWidth,
     gridRowHeights,
     offsetTopOfRows,
+    oddNumberOfIndex,
     currentMaxHeightPerRow,
     getRowHeightDiff,
   } = useGridProps({
@@ -39,39 +37,12 @@ export function useCalculations({
     maxRows,
   });
 
-  const oddNumberOfIndex = order.length % maxCols;
-
-  const currentCol = useRef(0);
-  const newCol = useRef(0);
-  const currentRow = useRef(0);
-  const newRow = useRef(0);
-
-  useEffect(() => {
-    // Reset coordinates on re-render
-    setNewCoordinates(
-      [...Array(orderByKey.length)].map(() => ({ x: 0, y: 0 }))
-    );
-  }, [orderByKey, maxRows]);
-
-  const initCoordinates = (index: number) => {
+  const setCurrentRowCol = (index: number) => {
     currentRow.current = Math.floor(index / maxCols);
     currentCol.current = index % maxCols;
   };
 
-  const setNewPosition = () => {
-    const stagingCoordinates = newCoordinates;
-    for (let i = 0, j = order.length; i < j; i += 1) {
-      stagingCoordinates[i].x += tempCoordinates.current[i].x;
-      stagingCoordinates[i].y += tempCoordinates.current[i].y;
-    }
-    setNewCoordinates(stagingCoordinates);
-    for (let i = 0, j = tempCoordinates.current.length; i < j; i += 1) {
-      tempCoordinates.current[i].x = 0;
-      tempCoordinates.current[i].y = 0;
-    }
-  };
-
-  const setXCoordinates = (indexPosition: number, newIndex: number) => {
+  const setTempCoordinatesXY = (indexPosition: number, newIndex: number) => {
     const width = columnWidth.current;
     // Find the indexes that need to be updated based on the from and to indexes
     const indexesToUpdate = range(newIndex, indexPosition);
@@ -118,7 +89,10 @@ export function useCalculations({
     }
   };
 
-  const setYCoordinates = (indexPosition: number, newIndex: number) => {
+  const setTempCoordinatesRowShift = (
+    indexPosition: number,
+    newIndex: number
+  ) => {
     const newOrder = swap(order, indexPosition, newIndex);
     const { rowHeightDiff } = getRowHeightDiff(newOrder);
 
@@ -137,7 +111,7 @@ export function useCalculations({
     }
   };
 
-  const setCoordinates = ({
+  const setTempCoordinates = ({
     currentIndexPosition,
     newIndex,
   }: {
@@ -146,16 +120,17 @@ export function useCalculations({
   }) => {
     const indexPosition = currentIndexPosition.current || 0;
     // Reset the staged coordinates
-    for (let i = 0, j = tempCoordinates.current.length; i < j; i += 1) {
-      tempCoordinates.current[i].x = 0;
-      tempCoordinates.current[i].y = 0;
-    }
-    setXCoordinates(indexPosition, newIndex);
+    tempCoordinates.current = [...Array(order.length)].map(() => ({
+      x: 0,
+      y: 0,
+    }));
+
+    setTempCoordinatesXY(indexPosition, newIndex);
     if (newRow.current !== currentRow.current)
-      setYCoordinates(indexPosition, newIndex);
+      setTempCoordinatesRowShift(indexPosition, newIndex);
   };
 
-  const calcNewCol = ({ mx }: { mx: number }) => {
+  const calculateNewCol = ({ mx }: { mx: number }) => {
     return Math.abs(
       clamp(
         Math.round(mx / columnWidth.current + currentCol.current),
@@ -165,7 +140,7 @@ export function useCalculations({
     );
   };
 
-  const calcNewRow = ({
+  const calculateNewRow = ({
     originalIndex,
     my,
   }: {
@@ -188,7 +163,7 @@ export function useCalculations({
     return maxRows - 1;
   };
 
-  const calcNewIndex = ({
+  const calculateNewIndex = ({
     originalIndex,
     mx,
     my,
@@ -197,8 +172,8 @@ export function useCalculations({
     mx: number;
     my: number;
   }) => {
-    newCol.current = calcNewCol({ mx });
-    newRow.current = calcNewRow({ originalIndex, my });
+    newCol.current = calculateNewCol({ mx });
+    newRow.current = calculateNewRow({ originalIndex, my });
     return clamp(
       newRow.current * maxCols + newCol.current,
       0,
@@ -207,12 +182,9 @@ export function useCalculations({
   };
 
   return {
-    calcNewIndex,
-    initCoordinates,
-    setCoordinates,
-    setNewPosition,
-    animateWithClone,
-    animateWithoutClone,
-    animateMirror,
+    tempCoordinates,
+    setCurrentRowCol,
+    calculateNewIndex,
+    setTempCoordinates,
   };
 }
