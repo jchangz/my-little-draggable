@@ -15,13 +15,34 @@ function useGridProps({
   maxCols: number;
   maxRows: number;
 }) {
+  // Distance from top of window to first row
+  const [offsetTop, setOffsetTop] = useState(0);
+  // Width of each column
   const [columnWidth, setColumnWidth] = useState(0);
+  // Array of heights of each item in the grid
   const [gridRowHeights, setGridRowHeights] = useState<number[]>([]);
-  const [currentMaxHeightPerRow, setCurrentMaxHeightPerRow] = useState<
-    number[]
-  >([]);
-  const [offsetTopOfRows, setOffsetTopOfRows] = useState<number[]>([]);
+  // Check if there are orphan indicies when we drag into the last row
   const oddNumberOfIndex = order.length % maxCols;
+  // Max height of each row based on the current order
+  const currentMaxHeightPerRow = calculateMaxHeightPerRow(
+    order,
+    maxCols,
+    maxRows,
+    gridRowHeights
+  );
+  // Distance from the top of the window to each row
+  const offsetTopOfRows =
+    // Skip the last item as the first row starts at the offsetTop of the grid
+    currentMaxHeightPerRow.slice(0, -1).reduce(
+      (resultArray: number[], item, i) => {
+        const newArray = resultArray;
+        const val = item + resultArray[i];
+        newArray.push(val);
+
+        return newArray;
+      },
+      [offsetTop]
+    );
 
   useEffect(() => {
     if (containerRef.current) {
@@ -45,33 +66,17 @@ function useGridProps({
 
         heightArr.push(height);
       });
-
+      setOffsetTop(containerRef.current.offsetTop);
       setGridRowHeights(heightArr);
-
-      const maxHeightPerRow = calculateMaxHeightPerRow(
-        order,
-        maxCols,
-        maxRows,
-        heightArr
-      );
-      setCurrentMaxHeightPerRow(maxHeightPerRow);
-
-      // Skip the last item as the first row starts at the offsetTop of the grid
-      const offsetTopOfRows = maxHeightPerRow.slice(0, -1).reduce(
-        (resultArray: number[], item, i) => {
-          const newArray = resultArray;
-          const val = item + resultArray[i];
-          newArray.push(val);
-
-          return newArray;
-        },
-        [containerRef.current.offsetTop]
-      );
-
-      setOffsetTopOfRows(offsetTopOfRows);
     }
+    // This only needs to run when window size changes or we toggle re-render
+    // But we would need to prop drill orderByKey and windowSize
+    // Using order causes it to re-render everytime we finish dragging
+    // However it seems performance impact is negligible...
   }, [order, maxCols, maxRows, containerRef]);
 
+  // Check the difference in row heights between the original and new order
+  // The difference is used to translate the row position
   const getRowHeightDiff = (order: number[]) => {
     // Get max heights of each row based on the new order
     const newMaxHeightPerRow = calculateMaxHeightPerRow(
