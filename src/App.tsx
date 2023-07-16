@@ -47,7 +47,6 @@ function App() {
     setTempCoordinates,
   } = useCalculations({
     order,
-    orderByKey,
     containerRef,
   });
 

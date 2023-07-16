@@ -7,13 +7,11 @@ import {
 function useGridProps({
   containerRef,
   order,
-  orderByKey,
   maxCols,
   maxRows,
 }: {
   containerRef: React.RefObject<HTMLDivElement>;
   order: number[];
-  orderByKey: number[];
   maxCols: number;
   maxRows: number;
 }) {
@@ -72,7 +70,7 @@ function useGridProps({
 
       setOffsetTopOfRows(offsetTopOfRows);
     }
-  }, [order, orderByKey, maxCols, maxRows, containerRef]);
+  }, [order, maxCols, maxRows, containerRef]);
 
   const getRowHeightDiff = (order: number[]) => {
     // Get max heights of each row based on the new order

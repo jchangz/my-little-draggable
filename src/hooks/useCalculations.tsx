@@ -4,11 +4,7 @@ import { swap } from "./swap";
 import { calculateHeightShift } from "../calculations";
 import useGridProps from "../hooks/useGridProps";
 
-export function useCalculations({
-  order,
-  orderByKey,
-  containerRef,
-}: CalculationsData) {
+export function useCalculations({ order, containerRef }: CalculationsData) {
   const tempCoordinates = useRef(
     [...Array(order.length)].map(() => ({ x: 0, y: 0 }))
   );
@@ -32,7 +28,6 @@ export function useCalculations({
   } = useGridProps({
     containerRef,
     order,
-    orderByKey,
     maxCols,
     maxRows,
   });
@@ -132,11 +127,7 @@ export function useCalculations({
 
   const calculateNewCol = ({ mx }: { mx: number }) => {
     return Math.abs(
-      clamp(
-        Math.round(mx / columnWidth + currentCol.current),
-        0,
-        maxCols - 1
-      )
+      clamp(Math.round(mx / columnWidth + currentCol.current), 0, maxCols - 1)
     );
   };
 
