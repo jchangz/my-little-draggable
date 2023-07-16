@@ -43,7 +43,7 @@ export function useCalculations({
   };
 
   const setTempCoordinatesXY = (indexPosition: number, newIndex: number) => {
-    const width = columnWidth.current;
+    const width = columnWidth;
     // Find the indexes that need to be updated based on the from and to indexes
     const indexesToUpdate = range(newIndex, indexPosition);
     // Check the direction we need to shift the indexes
@@ -133,7 +133,7 @@ export function useCalculations({
   const calculateNewCol = ({ mx }: { mx: number }) => {
     return Math.abs(
       clamp(
-        Math.round(mx / columnWidth.current + currentCol.current),
+        Math.round(mx / columnWidth + currentCol.current),
         0,
         maxCols - 1
       )
@@ -150,7 +150,7 @@ export function useCalculations({
     // Position of the top of the index being moved relative to the top
     const yOffset = offsetTopOfRows[currentRow.current] + my;
     // The trigger point is halfway of the height of the current index
-    const indexHeightHalfway = gridRowHeights.current[originalIndex] / 2;
+    const indexHeightHalfway = gridRowHeights[originalIndex] / 2;
 
     // Monitor each row
     for (let i = 0; i < maxRows; i += 1) {
