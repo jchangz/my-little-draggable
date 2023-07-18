@@ -21,10 +21,9 @@ function useMirror({ newCoordinates }: { newCoordinates: CoordinateData[] }) {
 
   return {
     mirrorIndex,
-    setMirrorIndex,
     showMirror,
     mirror,
-    mirrorApi,
+    setMirrorIndex,
     animateMirror,
     toggleMirror,
   };

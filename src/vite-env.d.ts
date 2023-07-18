@@ -13,7 +13,6 @@ export declare global {
   }
   interface CalculationsData {
     order: number[];
-    orderByKey: number[];
     containerRef: React.RefObject<HTMLDivElement>;
   }
   interface MirrorData {

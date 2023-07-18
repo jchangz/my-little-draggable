@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { useSprings, a } from "@react-spring/web";
 import { useDrag } from "@use-gesture/react";
 import { swap } from "./hooks/swap";
-import { useCalculations } from "./hooks/useCalculations";
+import useCalculations from "./hooks/useCalculations";
 import useMirror from "./hooks/useMirror";
 import useAnimation from "./hooks/useAnimation";
 import useWindowSize from "./hooks/useWindowSize";
@@ -175,7 +175,7 @@ function App() {
             </a.div>
           ))}
         </div>
-        {showMirror && mirrorIndex !== false && (
+        {showMirror && typeof mirrorIndex === "number" && (
           <a.div
             className={`item-${orderByKey[mirrorIndex]}`}
             id="item-mirror"

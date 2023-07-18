@@ -1,16 +1,15 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useRef } from "react";
 import { clamp, range } from "lodash";
 import { swap } from "./swap";
 import { calculateHeightShift } from "../calculations";
 import useGridProps from "../hooks/useGridProps";
 
-export function useCalculations({ order, containerRef }: CalculationsData) {
+function useCalculations({ order, containerRef }: CalculationsData) {
   const tempCoordinates = useRef(
     [...Array(order.length)].map(() => ({ x: 0, y: 0 }))
   );
 
-  const [maxCols, setMaxCols] = useState(3);
-  const [gridGap, setGridGap] = useState(0);
+  const maxCols = 3;
   const maxRows = Math.ceil(order.length / maxCols);
 
   const currentCol = useRef(0);
@@ -125,11 +124,10 @@ export function useCalculations({ order, containerRef }: CalculationsData) {
       setTempCoordinatesRowShift(indexPosition, newIndex);
   };
 
-  const calculateNewCol = ({ mx }: { mx: number }) => {
-    return Math.abs(
+  const calculateNewCol = ({ mx }: { mx: number }) =>
+    Math.abs(
       clamp(Math.round(mx / columnWidth + currentCol.current), 0, maxCols - 1)
     );
-  };
 
   const calculateNewRow = ({
     originalIndex,
@@ -179,3 +177,5 @@ export function useCalculations({ order, containerRef }: CalculationsData) {
     setTempCoordinates,
   };
 }
+
+export default useCalculations;
