@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { useSprings, a } from "@react-spring/web";
 import { useDrag } from "@use-gesture/react";
 import { swap } from "./hooks/swap";
-import useCalculations from "./hooks/useCalculations";
+import useCoordinates from "./hooks/useCoordinates";
 import useMirror from "./hooks/useMirror";
 import useAnimation from "./hooks/useAnimation";
 import useWindowSize from "./hooks/useWindowSize";
@@ -45,7 +45,7 @@ function App() {
     setCurrentRowCol,
     calculateNewIndex,
     setTempCoordinates,
-  } = useCalculations({
+  } = useCoordinates({
     order,
     containerRef,
   });

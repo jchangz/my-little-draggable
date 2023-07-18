@@ -3,7 +3,7 @@ import { clamp, range } from "lodash";
 import { swap } from "./swap";
 import useGridProps from "../hooks/useGridProps";
 
-function useCalculations({ order, containerRef }: CalculationsData) {
+function useCoordinates({ order, containerRef }: CalculationsData) {
   const tempCoordinates = useRef(
     [...Array(order.length)].map(() => ({ x: 0, y: 0 }))
   );
@@ -157,4 +157,4 @@ function useCalculations({ order, containerRef }: CalculationsData) {
   };
 }
 
-export default useCalculations;
+export default useCoordinates;
