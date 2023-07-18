@@ -1,8 +1,4 @@
 import React, { useState, useEffect } from "react";
-import {
-  calculateMaxHeightPerRow,
-  calculateRowHeightDiff,
-} from "../calculations";
 
 function useGridProps({
   containerRef,
@@ -23,23 +19,27 @@ function useGridProps({
   const [gridRowHeights, setGridRowHeights] = useState<number[]>([]);
   // Check if there are orphan indicies when we drag into the last row
   const oddNumberOfIndex = order.length % maxCols;
+
+  const calculateMaxHeightPerRow = (order: number[]) => {
+    const maxHeightPerRow = [];
+    const heightSortedByOrder = order.map((index) => gridRowHeights[index]);
+
+    for (let i = 0; i < maxRows; i += 1) {
+      const slice = heightSortedByOrder.slice(i * maxCols, (i + 1) * maxCols);
+      maxHeightPerRow.push(Math.max(...slice));
+    }
+
+    return maxHeightPerRow;
+  };
   // Max height of each row based on the current order
-  const currentMaxHeightPerRow = calculateMaxHeightPerRow(
-    order,
-    maxCols,
-    maxRows,
-    gridRowHeights
-  );
+  const currentMaxHeightPerRow = calculateMaxHeightPerRow(order);
   // Distance from the top of the window to each row
   const offsetTopOfRows =
     // Skip the last item as the first row starts at the offsetTop of the grid
     currentMaxHeightPerRow.slice(0, -1).reduce(
       (resultArray: number[], item, i) => {
-        const newArray = resultArray;
-        const val = item + resultArray[i];
-        newArray.push(val);
-
-        return newArray;
+        resultArray.push(item + resultArray[i]);
+        return resultArray;
       },
       [offsetTop]
     );
@@ -78,18 +78,18 @@ function useGridProps({
   // Check the difference in row heights between the original and new order
   // The difference is used to translate the row position
   const getRowHeightDiff = (order: number[]) => {
+    // Array of y-translate values for rows that need to be shifted
+    const rowHeightDiff: number[] = [];
     // Get max heights of each row based on the new order
-    const newMaxHeightPerRow = calculateMaxHeightPerRow(
-      order,
-      maxCols,
-      maxRows,
-      gridRowHeights
-    );
+    const newMaxHeightPerRow = calculateMaxHeightPerRow(order);
     // Get the y-coordinates to shift the row heights based on the new order
-    const { rowHeightDiff } = calculateRowHeightDiff(
-      currentMaxHeightPerRow,
-      newMaxHeightPerRow
-    );
+    for (let i = 0; i < maxRows; i += 1) {
+      rowHeightDiff.push(
+        newMaxHeightPerRow[i] -
+          currentMaxHeightPerRow[i] +
+          (i !== 0 ? rowHeightDiff[i - 1] : 0)
+      );
+    }
 
     return { rowHeightDiff };
   };
