@@ -7,13 +7,13 @@ function useGridProps({ containerRef, order, maxCols, maxRows }: GridData) {
   // Width of each column
   const [colWidth, setColWidth] = useState(0);
   // Array of heights of each item in the grid
-  const [gridRowHeights, setGridRowHeights] = useState<number[]>([]);
+  const [rowHeights, setRowHeights] = useState<number[]>([]);
   // Check if there are orphan indicies when we drag into the last row
-  const oddNumberOfIndex = order.length % maxCols;
+  const colOrphan = order.length % maxCols;
 
   const calculateMaxHeightPerRow = (order: number[]) => {
     const maxHeightPerRow = [];
-    const heightSortedByOrder = order.map((index) => gridRowHeights[index]);
+    const heightSortedByOrder = order.map((index) => rowHeights[index]);
 
     for (let i = 0; i < maxRows; i += 1) {
       const slice = heightSortedByOrder.slice(i * maxCols, (i + 1) * maxCols);
@@ -23,11 +23,11 @@ function useGridProps({ containerRef, order, maxCols, maxRows }: GridData) {
     return maxHeightPerRow;
   };
   // Max height of each row based on the current order
-  const currentMaxHeightPerRow = calculateMaxHeightPerRow(order);
+  const curMaxHeightPerRow = calculateMaxHeightPerRow(order);
   // Distance from the top of the window to each row
-  const offsetTopOfRows =
+  const rowOffsetTop =
     // Skip the last item as the first row starts at the offsetTop of the grid
-    currentMaxHeightPerRow.slice(0, -1).reduce(
+    curMaxHeightPerRow.slice(0, -1).reduce(
       (resultArray: number[], item, i) => {
         resultArray.push(item + resultArray[i]);
         return resultArray;
@@ -58,7 +58,7 @@ function useGridProps({ containerRef, order, maxCols, maxRows }: GridData) {
         heightArr.push(height);
       });
       setOffsetTop(containerRef.current.offsetTop);
-      setGridRowHeights(heightArr);
+      setRowHeights(heightArr);
     }
     // This only needs to run when window size changes or we toggle re-render
     // But we would need to prop drill orderByKey and windowSize
@@ -77,7 +77,7 @@ function useGridProps({ containerRef, order, maxCols, maxRows }: GridData) {
     for (let i = 0; i < maxRows; i += 1) {
       rowHeightDiff.push(
         newMaxHeightPerRow[i] -
-          currentMaxHeightPerRow[i] +
+          curMaxHeightPerRow[i] +
           (i !== 0 ? rowHeightDiff[i - 1] : 0)
       );
     }
@@ -87,23 +87,22 @@ function useGridProps({ containerRef, order, maxCols, maxRows }: GridData) {
 
   // Calculate y-direction shift of the selected index
   // Returns the total sum of row heights
-  const calculateHeightShift = (curRow: number, newRow: number) =>
+  const getRowHeightShift = (curRow: number, newRow: number) =>
     range(newRow, curRow)
       .map((rowNum) => {
-        if (newRow > curRow)
-          return currentMaxHeightPerRow[Math.abs(rowNum - 1)];
-        else return -currentMaxHeightPerRow[rowNum];
+        if (newRow > curRow) return curMaxHeightPerRow[Math.abs(rowNum - 1)];
+        else return -curMaxHeightPerRow[rowNum];
       })
       .reduce((a, b) => a + b, 0);
 
   return {
     colWidth,
-    gridRowHeights,
-    offsetTopOfRows,
-    oddNumberOfIndex,
-    currentMaxHeightPerRow,
+    colOrphan,
+    rowHeights,
+    rowOffsetTop,
+    curMaxHeightPerRow,
     getRowHeightDiff,
-    calculateHeightShift,
+    getRowHeightShift,
   };
 }
 

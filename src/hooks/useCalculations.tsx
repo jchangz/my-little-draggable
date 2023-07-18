@@ -18,12 +18,12 @@ function useCalculations({ order, containerRef }: CalculationsData) {
 
   const {
     colWidth,
-    gridRowHeights,
-    offsetTopOfRows,
-    oddNumberOfIndex,
-    currentMaxHeightPerRow,
+    colOrphan,
+    rowHeights,
+    rowOffsetTop,
+    curMaxHeightPerRow,
     getRowHeightDiff,
-    calculateHeightShift,
+    getRowHeightShift,
   } = useGridProps({
     containerRef,
     order,
@@ -50,29 +50,29 @@ function useCalculations({ order, containerRef }: CalculationsData) {
           const shiftDown = !((thisIndex + 1) % maxCols);
           tempCoordinates.current[order[thisIndex]] = {
             x: shiftDown ? -(maxCols - 1) * colWidth : colWidth,
-            y: shiftDown ? currentMaxHeightPerRow[thisIndexRow] : 0,
+            y: shiftDown ? curMaxHeightPerRow[thisIndexRow] : 0,
           };
         } else if (direction < 0) {
           const shiftUp = !(thisIndex % maxCols);
           tempCoordinates.current[order[thisIndex]] = {
             x: shiftUp ? (maxCols - 1) * colWidth : -colWidth,
-            y: shiftUp ? -currentMaxHeightPerRow[thisIndexRow - 1] : 0,
+            y: shiftUp ? -curMaxHeightPerRow[thisIndexRow - 1] : 0,
           };
         }
       }
 
       if (
         newRow.current === maxRows - 1 &&
-        oddNumberOfIndex &&
-        newCol.current >= oddNumberOfIndex
+        colOrphan &&
+        newCol.current >= colOrphan
       )
-        newCol.current = oddNumberOfIndex - 1;
+        newCol.current = colOrphan - 1;
 
       tempCoordinates.current[order[curIndex]] = {
         x: (newCol.current - curCol.current) * colWidth,
         y:
           newRow.current !== curRow.current
-            ? calculateHeightShift(curRow.current, newRow.current)
+            ? getRowHeightShift(curRow.current, newRow.current)
             : 0,
       };
     }
@@ -124,13 +124,13 @@ function useCalculations({ order, containerRef }: CalculationsData) {
 
   const calculateNewRow = ({ originalIndex, my }: CoordinateData) => {
     // Position of the top of the index being moved relative to the top
-    const yOffset = offsetTopOfRows[curRow.current] + my;
+    const yOffset = rowOffsetTop[curRow.current] + my;
     // The trigger point is halfway of the height of the current index
-    const indexHeightHalfway = gridRowHeights[originalIndex] / 2;
+    const indexHeightHalfway = rowHeights[originalIndex] / 2;
 
     // Monitor each row
     for (let i = 0; i < maxRows; i += 1) {
-      const offsetOfNextRow = offsetTopOfRows[i + 1];
+      const offsetOfNextRow = rowOffsetTop[i + 1];
       if (offsetOfNextRow && yOffset < offsetOfNextRow - indexHeightHalfway) {
         return i;
       }
