@@ -1,7 +1,6 @@
 import React, { useRef } from "react";
 import { clamp, range } from "lodash";
 import { swap } from "./swap";
-import { calculateHeightShift } from "../calculations";
 import useGridProps from "../hooks/useGridProps";
 
 function useCalculations({ order, containerRef }: CalculationsData) {
@@ -24,6 +23,7 @@ function useCalculations({ order, containerRef }: CalculationsData) {
     oddNumberOfIndex,
     currentMaxHeightPerRow,
     getRowHeightDiff,
+    calculateHeightShift,
   } = useGridProps({
     containerRef,
     order,
@@ -73,11 +73,7 @@ function useCalculations({ order, containerRef }: CalculationsData) {
         x: (newCol.current - currentCol.current) * width,
         y:
           newRow !== currentRow
-            ? calculateHeightShift(
-                newRow.current,
-                currentRow.current,
-                currentMaxHeightPerRow
-              )
+            ? calculateHeightShift(currentRow.current, newRow.current)
             : 0,
       };
     }

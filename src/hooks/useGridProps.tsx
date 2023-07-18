@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { range } from "lodash";
 
 function useGridProps({
   containerRef,
@@ -94,6 +95,17 @@ function useGridProps({
     return { rowHeightDiff };
   };
 
+  // Calculate y-direction shift of the selected index
+  // Returns the total sum of row heights
+  const calculateHeightShift = (curRow: number, newRow: number) =>
+    range(newRow, curRow)
+      .map((rowNum) => {
+        if (newRow > curRow)
+          return currentMaxHeightPerRow[Math.abs(rowNum - 1)];
+        else return -currentMaxHeightPerRow[rowNum];
+      })
+      .reduce((a, b) => a + b, 0);
+
   return {
     columnWidth,
     gridRowHeights,
@@ -101,6 +113,7 @@ function useGridProps({
     oddNumberOfIndex,
     currentMaxHeightPerRow,
     getRowHeightDiff,
+    calculateHeightShift,
   };
 }
 
