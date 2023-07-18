@@ -1,17 +1,7 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { range } from "lodash";
 
-function useGridProps({
-  containerRef,
-  order,
-  maxCols,
-  maxRows,
-}: {
-  containerRef: React.RefObject<HTMLDivElement>;
-  order: number[];
-  maxCols: number;
-  maxRows: number;
-}) {
+function useGridProps({ containerRef, order, maxCols, maxRows }: GridData) {
   // Distance from top of window to first row
   const [offsetTop, setOffsetTop] = useState(0);
   // Width of each column

@@ -36,13 +36,7 @@ function useCalculations({ order, containerRef }: CalculationsData) {
     curCol.current = index % maxCols;
   };
 
-  const setTempCoordinatesXY = ({
-    curIndex,
-    newIndex,
-  }: {
-    curIndex: number;
-    newIndex: number;
-  }) => {
+  const setTempCoordinatesXY = ({ curIndex, newIndex }: CoordinateData) => {
     // Find the indexes that need to be updated based on the from and to indexes
     const indexesToUpdate = range(newIndex, curIndex);
     // Check the direction we need to shift the indexes
@@ -87,10 +81,7 @@ function useCalculations({ order, containerRef }: CalculationsData) {
   const setTempCoordinatesRowShift = ({
     curIndex,
     newIndex,
-  }: {
-    curIndex: number;
-    newIndex: number;
-  }) => {
+  }: CoordinateData) => {
     const newOrder = swap(order, curIndex, newIndex);
     const { rowHeightDiff } = getRowHeightDiff(newOrder);
 
@@ -128,16 +119,10 @@ function useCalculations({ order, containerRef }: CalculationsData) {
       setTempCoordinatesRowShift({ curIndex, newIndex });
   };
 
-  const calculateNewCol = ({ mx }: { mx: number }) =>
+  const calculateNewCol = ({ mx }: CoordinateData) =>
     Math.abs(clamp(Math.round(mx / colWidth + curCol.current), 0, maxCols - 1));
 
-  const calculateNewRow = ({
-    originalIndex,
-    my,
-  }: {
-    originalIndex: number;
-    my: number;
-  }) => {
+  const calculateNewRow = ({ originalIndex, my }: CoordinateData) => {
     // Position of the top of the index being moved relative to the top
     const yOffset = offsetTopOfRows[curRow.current] + my;
     // The trigger point is halfway of the height of the current index
@@ -154,15 +139,7 @@ function useCalculations({ order, containerRef }: CalculationsData) {
     return maxRows - 1;
   };
 
-  const calculateNewIndex = ({
-    originalIndex,
-    mx,
-    my,
-  }: {
-    originalIndex: number;
-    mx: number;
-    my: number;
-  }) => {
+  const calculateNewIndex = ({ originalIndex, mx, my }: CoordinateData) => {
     newCol.current = calculateNewCol({ mx });
     newRow.current = calculateNewRow({ originalIndex, my });
     return clamp(

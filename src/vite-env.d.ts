@@ -5,6 +5,12 @@ import React from "react";
 export {};
 
 export declare global {
+  interface GridData {
+    containerRef: React.RefObject<HTMLDivElement>;
+    order: number[];
+    maxCols: number;
+    maxRows: number;
+  }
   interface RowData {
     [id: number]: number[];
   }
@@ -14,12 +20,5 @@ export declare global {
   interface CalculationsData {
     order: number[];
     containerRef: React.RefObject<HTMLDivElement>;
-  }
-  interface MirrorData {
-    originalIndex: number;
-    mx: number;
-    my: number;
-    top: number;
-    left: number;
   }
 }
