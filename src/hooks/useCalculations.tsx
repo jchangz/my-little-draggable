@@ -11,13 +11,13 @@ function useCalculations({ order, containerRef }: CalculationsData) {
   const maxCols = 3;
   const maxRows = Math.ceil(order.length / maxCols);
 
-  const currentCol = useRef(0);
+  const curCol = useRef(0);
   const newCol = useRef(0);
-  const currentRow = useRef(0);
+  const curRow = useRef(0);
   const newRow = useRef(0);
 
   const {
-    columnWidth,
+    colWidth,
     gridRowHeights,
     offsetTopOfRows,
     oddNumberOfIndex,
@@ -32,16 +32,21 @@ function useCalculations({ order, containerRef }: CalculationsData) {
   });
 
   const setCurrentRowCol = (index: number) => {
-    currentRow.current = Math.floor(index / maxCols);
-    currentCol.current = index % maxCols;
+    curRow.current = Math.floor(index / maxCols);
+    curCol.current = index % maxCols;
   };
 
-  const setTempCoordinatesXY = (indexPosition: number, newIndex: number) => {
-    const width = columnWidth;
+  const setTempCoordinatesXY = ({
+    curIndex,
+    newIndex,
+  }: {
+    curIndex: number;
+    newIndex: number;
+  }) => {
     // Find the indexes that need to be updated based on the from and to indexes
-    const indexesToUpdate = range(newIndex, indexPosition);
+    const indexesToUpdate = range(newIndex, curIndex);
     // Check the direction we need to shift the indexes
-    const direction = Math.sign(indexPosition - newIndex);
+    const direction = Math.sign(curIndex - newIndex);
 
     if (direction) {
       for (let i = 0, j = indexesToUpdate.length; i < j; i += 1) {
@@ -50,13 +55,13 @@ function useCalculations({ order, containerRef }: CalculationsData) {
         if (direction > 0) {
           const shiftDown = !((thisIndex + 1) % maxCols);
           tempCoordinates.current[order[thisIndex]] = {
-            x: shiftDown ? -(maxCols - 1) * width : width,
+            x: shiftDown ? -(maxCols - 1) * colWidth : colWidth,
             y: shiftDown ? currentMaxHeightPerRow[thisIndexRow] : 0,
           };
         } else if (direction < 0) {
           const shiftUp = !(thisIndex % maxCols);
           tempCoordinates.current[order[thisIndex]] = {
-            x: shiftUp ? (maxCols - 1) * width : -width,
+            x: shiftUp ? (maxCols - 1) * colWidth : -colWidth,
             y: shiftUp ? -currentMaxHeightPerRow[thisIndexRow - 1] : 0,
           };
         }
@@ -69,33 +74,36 @@ function useCalculations({ order, containerRef }: CalculationsData) {
       )
         newCol.current = oddNumberOfIndex - 1;
 
-      tempCoordinates.current[order[indexPosition]] = {
-        x: (newCol.current - currentCol.current) * width,
+      tempCoordinates.current[order[curIndex]] = {
+        x: (newCol.current - curCol.current) * colWidth,
         y:
-          newRow !== currentRow
-            ? calculateHeightShift(currentRow.current, newRow.current)
+          newRow.current !== curRow.current
+            ? calculateHeightShift(curRow.current, newRow.current)
             : 0,
       };
     }
   };
 
-  const setTempCoordinatesRowShift = (
-    indexPosition: number,
-    newIndex: number
-  ) => {
-    const newOrder = swap(order, indexPosition, newIndex);
+  const setTempCoordinatesRowShift = ({
+    curIndex,
+    newIndex,
+  }: {
+    curIndex: number;
+    newIndex: number;
+  }) => {
+    const newOrder = swap(order, curIndex, newIndex);
     const { rowHeightDiff } = getRowHeightDiff(newOrder);
 
     for (let i = 0; i < maxRows; i += 1) {
       // Shift the row after i
       if (rowHeightDiff[i] && i + 1 < maxRows) {
-        const indexesToShift = newOrder.slice(
+        const indicesToShift = newOrder.slice(
           (i + 1) * maxCols,
           (i + 2) * maxCols
         );
         // Add new height difference to each index in the row
-        for (let j = 0, k = indexesToShift.length; j < k; j += 1) {
-          tempCoordinates.current[indexesToShift[j]].y += rowHeightDiff[i];
+        for (let j = 0, k = indicesToShift.length; j < k; j += 1) {
+          tempCoordinates.current[indicesToShift[j]].y += rowHeightDiff[i];
         }
       }
     }
@@ -108,22 +116,20 @@ function useCalculations({ order, containerRef }: CalculationsData) {
     currentIndexPosition: React.RefObject<number>;
     newIndex: number;
   }) => {
-    const indexPosition = currentIndexPosition.current || 0;
+    const curIndex = currentIndexPosition.current || 0;
     // Reset the staged coordinates
     tempCoordinates.current = [...Array(order.length)].map(() => ({
       x: 0,
       y: 0,
     }));
 
-    setTempCoordinatesXY(indexPosition, newIndex);
-    if (newRow.current !== currentRow.current)
-      setTempCoordinatesRowShift(indexPosition, newIndex);
+    setTempCoordinatesXY({ curIndex, newIndex });
+    if (newRow.current !== curRow.current)
+      setTempCoordinatesRowShift({ curIndex, newIndex });
   };
 
   const calculateNewCol = ({ mx }: { mx: number }) =>
-    Math.abs(
-      clamp(Math.round(mx / columnWidth + currentCol.current), 0, maxCols - 1)
-    );
+    Math.abs(clamp(Math.round(mx / colWidth + curCol.current), 0, maxCols - 1));
 
   const calculateNewRow = ({
     originalIndex,
@@ -133,7 +139,7 @@ function useCalculations({ order, containerRef }: CalculationsData) {
     my: number;
   }) => {
     // Position of the top of the index being moved relative to the top
-    const yOffset = offsetTopOfRows[currentRow.current] + my;
+    const yOffset = offsetTopOfRows[curRow.current] + my;
     // The trigger point is halfway of the height of the current index
     const indexHeightHalfway = gridRowHeights[originalIndex] / 2;
 

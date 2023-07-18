@@ -15,7 +15,7 @@ function useGridProps({
   // Distance from top of window to first row
   const [offsetTop, setOffsetTop] = useState(0);
   // Width of each column
-  const [columnWidth, setColumnWidth] = useState(0);
+  const [colWidth, setColWidth] = useState(0);
   // Array of heights of each item in the grid
   const [gridRowHeights, setGridRowHeights] = useState<number[]>([]);
   // Check if there are orphan indicies when we drag into the last row
@@ -56,7 +56,7 @@ function useGridProps({
         const { width, height } = item.getBoundingClientRect();
 
         if (i === 0) {
-          setColumnWidth(width);
+          setColWidth(width);
 
           // Set css property for the mirror element width
           document.documentElement.style.setProperty(
@@ -107,7 +107,7 @@ function useGridProps({
       .reduce((a, b) => a + b, 0);
 
   return {
-    columnWidth,
+    colWidth,
     gridRowHeights,
     offsetTopOfRows,
     oddNumberOfIndex,
