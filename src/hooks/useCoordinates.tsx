@@ -3,7 +3,12 @@ import { clamp, range } from "lodash";
 import { swap } from "./swap";
 import useGridProps from "../hooks/useGridProps";
 
-function useCoordinates({ order, containerRef }: CalculationsData) {
+function useCoordinates({
+  order,
+  orderByKey,
+  containerRef,
+  windowSize,
+}: CalculationsData) {
   const tempCoordinates = useRef(
     [...Array(order.length)].map(() => ({ x: 0, y: 0 }))
   );
@@ -27,8 +32,10 @@ function useCoordinates({ order, containerRef }: CalculationsData) {
   } = useGridProps({
     containerRef,
     order,
+    orderByKey,
     maxCols,
     maxRows,
+    windowSize,
   });
 
   const setCurrentRowCol = (index: number) => {

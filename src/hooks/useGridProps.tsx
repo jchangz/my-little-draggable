@@ -1,7 +1,14 @@
 import { useState, useEffect } from "react";
 import { range } from "lodash";
 
-function useGridProps({ containerRef, order, maxCols, maxRows }: GridData) {
+function useGridProps({
+  containerRef,
+  order,
+  orderByKey,
+  maxCols,
+  maxRows,
+  windowSize,
+}: GridData) {
   // Distance from top of window to first row
   const [offsetTop, setOffsetTop] = useState(0);
   // Width of each column
@@ -61,10 +68,7 @@ function useGridProps({ containerRef, order, maxCols, maxRows }: GridData) {
       setRowHeights(heightArr);
     }
     // This only needs to run when window size changes or we toggle re-render
-    // But we would need to prop drill orderByKey and windowSize
-    // Using order causes it to re-render everytime we finish dragging
-    // However it seems performance impact is negligible...
-  }, [order, maxCols, maxRows, containerRef]);
+  }, [windowSize, orderByKey, maxCols, maxRows, containerRef]);
 
   // Check the difference in row heights between the original and new order
   // The difference is used to translate the row position

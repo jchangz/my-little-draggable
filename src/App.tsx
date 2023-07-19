@@ -47,7 +47,9 @@ function App() {
     setTempCoordinates,
   } = useCoordinates({
     order,
+    orderByKey,
     containerRef,
+    windowSize,
   });
 
   const { animateWithClone, animateWithoutClone } = useAnimation({
