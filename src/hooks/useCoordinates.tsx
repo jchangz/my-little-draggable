@@ -1,4 +1,4 @@
-import React, { useRef } from "react";
+import { useRef } from "react";
 import { clamp, range } from "lodash";
 import { swap } from "./swap";
 import useGridProps from "../hooks/useGridProps";
@@ -12,6 +12,7 @@ function useCoordinates({
   const tempCoordinates = useRef(
     [...Array(order.length)].map(() => ({ x: 0, y: 0 }))
   );
+  const currentIndexPosition = useRef(0);
 
   const maxCols = 3;
   const maxRows = Math.ceil(order.length / maxCols);
@@ -38,16 +39,22 @@ function useCoordinates({
     windowSize,
   });
 
-  const setCurrentRowCol = (index: number) => {
-    curRow.current = Math.floor(index / maxCols);
-    curCol.current = index % maxCols;
+  const initCoordinates = ({ originalIndex }: { originalIndex: number }) => {
+    const indexPosition = order.indexOf(originalIndex);
+    currentIndexPosition.current = indexPosition;
+    curRow.current = Math.floor(indexPosition / maxCols);
+    curCol.current = indexPosition % maxCols;
+
+    return indexPosition;
   };
 
-  const setTempCoordinatesXY = ({ curIndex, newIndex }: CoordinateData) => {
+  const getCurrentIndexPosition = () => currentIndexPosition.current;
+
+  const setTempCoordinatesXY = ({ newIndex }: CoordinateData) => {
     // Find the indexes that need to be updated based on the from and to indexes
-    const indexesToUpdate = range(newIndex, curIndex);
+    const indexesToUpdate = range(newIndex, currentIndexPosition.current);
     // Check the direction we need to shift the indexes
-    const direction = Math.sign(curIndex - newIndex);
+    const direction = Math.sign(currentIndexPosition.current - newIndex);
 
     if (direction) {
       for (let i = 0, j = indexesToUpdate.length; i < j; i += 1) {
@@ -75,7 +82,7 @@ function useCoordinates({
       )
         newCol.current = colOrphan - 1;
 
-      tempCoordinates.current[order[curIndex]] = {
+      tempCoordinates.current[order[currentIndexPosition.current]] = {
         x: (newCol.current - curCol.current) * colWidth,
         y:
           newRow.current !== curRow.current
@@ -85,11 +92,8 @@ function useCoordinates({
     }
   };
 
-  const setTempCoordinatesRowShift = ({
-    curIndex,
-    newIndex,
-  }: CoordinateData) => {
-    const newOrder = swap(order, curIndex, newIndex);
+  const setTempCoordinatesRowShift = ({ newIndex }: CoordinateData) => {
+    const newOrder = swap(order, currentIndexPosition.current, newIndex);
     const { rowHeightDiff } = getRowHeightDiff(newOrder);
 
     for (let i = 0; i < maxRows; i += 1) {
@@ -107,23 +111,16 @@ function useCoordinates({
     }
   };
 
-  const setTempCoordinates = ({
-    currentIndexPosition,
-    newIndex,
-  }: {
-    currentIndexPosition: React.RefObject<number>;
-    newIndex: number;
-  }) => {
-    const curIndex = currentIndexPosition.current || 0;
+  const setTempCoordinates = ({ newIndex }: { newIndex: number }) => {
     // Reset the staged coordinates
     tempCoordinates.current = [...Array(order.length)].map(() => ({
       x: 0,
       y: 0,
     }));
 
-    setTempCoordinatesXY({ curIndex, newIndex });
+    setTempCoordinatesXY({ newIndex });
     if (newRow.current !== curRow.current)
-      setTempCoordinatesRowShift({ curIndex, newIndex });
+      setTempCoordinatesRowShift({ newIndex });
   };
 
   const calculateNewCol = ({ mx }: CoordinateData) =>
@@ -158,7 +155,8 @@ function useCoordinates({
 
   return {
     tempCoordinates,
-    setCurrentRowCol,
+    initCoordinates,
+    getCurrentIndexPosition,
     calculateNewIndex,
     setTempCoordinates,
   };

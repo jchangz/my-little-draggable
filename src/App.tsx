@@ -22,10 +22,8 @@ function App() {
   });
   // Keeps track of the transform translate values of the current order
   const [newCoordinates, setNewCoordinates] = useState<CoordinateData[]>([]);
-
-  const currentIndexPosition = useRef(0);
+  // Keeps track of the index we are at and check if switch into a new index
   const thisIndex = useRef(0);
-
   // Reference to obtain necessary grid measurements
   const containerRef = useRef<HTMLDivElement>(null);
   // Element used to set boundary on useDrag gesture
@@ -42,7 +40,8 @@ function App() {
 
   const {
     tempCoordinates,
-    setCurrentRowCol,
+    initCoordinates,
+    getCurrentIndexPosition,
     calculateNewIndex,
     setTempCoordinates,
   } = useCoordinates({
@@ -77,12 +76,7 @@ function App() {
     }) => {
       if (first) {
         if (showMirror) setMirrorIndex(originalIndex);
-
-        const currentIndex = order.indexOf(originalIndex);
-        currentIndexPosition.current = currentIndex;
-        thisIndex.current = currentIndex;
-
-        setCurrentRowCol(currentIndexPosition.current);
+        thisIndex.current = initCoordinates({ originalIndex });
       }
 
       const newIndex = calculateNewIndex({ originalIndex, mx, my });
@@ -92,7 +86,7 @@ function App() {
         velocity[0] < 0.7 &&
         velocity[1] < 0.7
       ) {
-        setTempCoordinates({ currentIndexPosition, newIndex });
+        setTempCoordinates({ newIndex });
         thisIndex.current = newIndex;
       }
 
@@ -105,11 +99,11 @@ function App() {
 
       // If user drags and releases beyond the velocity limit
       if (!active && thisIndex.current !== newIndex) {
-        setTempCoordinates({ currentIndexPosition, newIndex });
+        setTempCoordinates({ newIndex });
         dragApi.start(animateWithoutClone({ originalIndex, down, mx, my }));
       }
 
-      if (!active && currentIndexPosition.current !== newIndex) {
+      if (!active && getCurrentIndexPosition() !== newIndex) {
         const stagingCoordinates = newCoordinates;
         for (let i = 0, j = order.length; i < j; i += 1) {
           stagingCoordinates[i].x += tempCoordinates.current[i].x;
@@ -119,7 +113,8 @@ function App() {
         }
         setNewCoordinates(stagingCoordinates);
 
-        setOrder(swap(order, currentIndexPosition.current, newIndex));
+        const currentIndexPosition = getCurrentIndexPosition();
+        setOrder(swap(order, currentIndexPosition, newIndex));
         // Store current order for re-rendering
         setTempOrder({ currentIndexPosition, newIndex });
       }

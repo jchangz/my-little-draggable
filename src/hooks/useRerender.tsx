@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { swap } from "./swap";
 
 function useRerender({
@@ -23,14 +23,10 @@ function useRerender({
     currentIndexPosition,
     newIndex,
   }: {
-    currentIndexPosition: React.MutableRefObject<number>;
+    currentIndexPosition: number;
     newIndex: number;
   }) => {
-    tempOrder.current = swap(
-      tempOrder.current,
-      currentIndexPosition.current,
-      newIndex
-    );
+    tempOrder.current = swap(tempOrder.current, currentIndexPosition, newIndex);
   };
 
   useEffect(() => {
