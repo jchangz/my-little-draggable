@@ -1,24 +1,26 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useSprings, a } from "@react-spring/web";
 import { useDrag } from "@use-gesture/react";
 import { swap } from "./hooks/swap";
 import useCoordinates from "./hooks/useCoordinates";
 import useMirror from "./hooks/useMirror";
 import useAnimation from "./hooks/useAnimation";
+import useRerender from "./hooks/useRerender";
 import useWindowSize from "./hooks/useWindowSize";
 import "./App.css";
 
 function App() {
   const keys = ["D", "R", "A", "G", "g", "a", "B", "L", "E"];
-  const defaultOrderArr = [...Array(keys.length)].map((_, i) => i);
-
+  // Hook to re-render on window size change
+  const windowSize = useWindowSize();
   // The order of items based on grid position, resets on re-render
-  const [order, setOrder] = useState(defaultOrderArr);
-  // The order of items based on item key, keeping correct order on re-render
-  const [orderByKey, setOrderByKey] = useState(defaultOrderArr);
-  // Temp store of grid position order used to update orderByKey
-  const tempOrder = useRef(defaultOrderArr);
-
+  const [order, setOrder] = useState([...Array(keys.length)].map((_, i) => i));
+  // Re-render hook which tracks the modified order of items
+  const { orderByKey, setTempOrder, toggleRender } = useRerender({
+    keys,
+    windowSize,
+  });
+  // Keeps track of the transform translate values of the current order
   const [newCoordinates, setNewCoordinates] = useState<CoordinateData[]>([]);
 
   const currentIndexPosition = useRef(0);
@@ -28,8 +30,6 @@ function App() {
   const containerRef = useRef<HTMLDivElement>(null);
   // Element used to set boundary on useDrag gesture
   const boundsRef = useRef<HTMLDivElement>(null);
-  // Hook to re-render on window size change
-  const windowSize = useWindowSize();
 
   const {
     mirrorIndex,
@@ -120,11 +120,8 @@ function App() {
         setNewCoordinates(stagingCoordinates);
 
         setOrder(swap(order, currentIndexPosition.current, newIndex));
-        tempOrder.current = swap(
-          tempOrder.current,
-          currentIndexPosition.current,
-          newIndex
-        );
+        // Store current order for re-rendering
+        setTempOrder({ currentIndexPosition, newIndex });
       }
 
       if (!active && showMirror) setMirrorIndex(false);
@@ -135,8 +132,7 @@ function App() {
     }
   );
 
-  const toggleRender = useCallback(() => {
-    setOrderByKey(tempOrder.current);
+  useEffect(() => {
     setOrder([...Array(keys.length)].map((_, i) => i));
     setNewCoordinates([...Array(keys.length)].map(() => ({ x: 0, y: 0 })));
     dragApi.start(() => ({
@@ -144,11 +140,7 @@ function App() {
       y: 0,
       immediate: true,
     }));
-  }, [dragApi, keys.length]);
-
-  useEffect(() => {
-    toggleRender();
-  }, [windowSize, toggleRender]);
+  }, [orderByKey, dragApi, keys.length]);
 
   return (
     <>
