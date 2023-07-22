@@ -1,53 +1,52 @@
-#root {
-  width: 100%;
-}
-
 .parent {
-  display: flex;
-  align-items: flex-start;
   min-height: 100vh;
 }
-
-.container {
-  display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
-  align-items: flex-start;
-  max-width: 500px;
-  width: 100%;
-  margin: 0 auto;
-}
-
-.container > div {
-  width: 100%;
-}
-
-.drag-item {
-  padding: 0.5em;
-  aspect-ratio: 1;
-}
-
-.bg-red {
-  background: red;
-  width: 100%;
-  height: 100%;
-}
-
-.item-1 .drag-item {
+.parent .drag-1 {
   aspect-ratio: 1/2;
 }
-.item-2 .drag-item {
+.parent .drag-2 {
   aspect-ratio: 2/3;
 }
 
-#item-mirror {
+.draggable {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  align-items: flex-start;
+  max-width: 600px;
+  width: 100%;
+  margin: 0 auto;
+}
+.draggable li {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1;
+  touch-action: none;
+}
+.draggable li::after {
+  content: "";
+  background: red;
   position: absolute;
-  top: 0;
-  z-index: 99;
-  width: var(--col-width);
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: calc(100% - 1em);
+  height: calc(100% - 1em);
 }
 
-.bg-blue {
+.draggable-mirror {
+  position: absolute;
+  width: var(--col-width);
+  aspect-ratio: 1;
+  z-index: 99;
+}
+.draggable-mirror::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: calc(100% - 1em);
+  height: calc(100% - 1em);
+  transform: translate(-50%, -50%);
   background: blue;
-  width: 100%;
-  height: 100%;
+  box-shadow: rgba(0, 0, 0, 0.5) 0px 15px 30px 0px;
 }

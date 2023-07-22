@@ -139,15 +139,15 @@ function App() {
 
   return (
     <>
-      <button onClick={toggleMirror}>Enable Mirror</button>
-      <button onClick={toggleRender}>Rerender</button>
       <div className="parent" ref={boundsRef}>
-        <div className="container" ref={containerRef}>
+        <button onClick={toggleMirror}>Enable Mirror</button>
+        <button onClick={toggleRender}>Rerender</button>
+        <ul className="draggable" ref={containerRef}>
           {drag.map(({ x, y, opacity, zIndex, shadow }, i) => (
-            <a.div
+            <a.li
               {...bind(i)}
-              className={`item-${orderByKey[i]}`}
-              key={`item-${orderByKey[i]}`}
+              className={`drag-${orderByKey[i]}`}
+              key={`drag-${orderByKey[i]}`}
               style={{
                 x,
                 y,
@@ -157,23 +157,14 @@ function App() {
                   (s) => `rgba(0, 0, 0, 0.5) 0px ${s}px ${2 * s}px 0px`
                 ),
               }}
-            >
-              <div className="drag-item">
-                <div className="bg-red" />
-              </div>
-            </a.div>
+            />
           ))}
-        </div>
+        </ul>
         {showMirror && typeof mirrorIndex === "number" && (
           <a.div
-            className={`item-${orderByKey[mirrorIndex]}`}
-            id="item-mirror"
+            className={`draggable-mirror drag-${orderByKey[mirrorIndex]}`}
             style={mirror}
-          >
-            <div className="drag-item">
-              <div className="bg-blue" />
-            </div>
-          </a.div>
+          />
         )}
       </div>
     </>
