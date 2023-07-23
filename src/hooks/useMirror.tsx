@@ -10,13 +10,7 @@ function useMirror({ newCoordinates }: { newCoordinates: CoordinateData[] }) {
     setShowMirror((prev) => !prev);
   }
 
-  const animateMirror = ({
-    originalIndex,
-    top,
-    left,
-    mx,
-    my,
-  }: CoordinateData) =>
+  const animateMirror = ({ originalIndex, top, left, mx, my }: NumberData) =>
     mirrorApi.start({
       x: newCoordinates[originalIndex].x + mx,
       y: newCoordinates[originalIndex].y + my,

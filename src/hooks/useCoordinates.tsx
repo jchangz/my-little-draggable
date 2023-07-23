@@ -6,9 +6,9 @@ import useGridProps from "../hooks/useGridProps";
 function useCoordinates({
   order,
   orderByKey,
-  containerRef,
+  draggableRef,
   windowSize,
-}: CalculationsData) {
+}: DraggableData) {
   const tempCoordinates = useRef(
     [...Array(order.length)].map(() => ({ x: 0, y: 0 }))
   );
@@ -31,15 +31,15 @@ function useCoordinates({
     getRowHeightDiff,
     getRowHeightShift,
   } = useGridProps({
-    containerRef,
     order,
     orderByKey,
+    draggableRef,
     maxCols,
     maxRows,
     windowSize,
   });
 
-  const initCoordinates = ({ originalIndex }: { originalIndex: number }) => {
+  const initCoordinates = ({ originalIndex }: NumberData) => {
     const indexPosition = order.indexOf(originalIndex);
     currentIndexPosition.current = indexPosition;
     curRow.current = Math.floor(indexPosition / maxCols);
@@ -50,7 +50,7 @@ function useCoordinates({
 
   const getCurrentIndexPosition = () => currentIndexPosition.current;
 
-  const setTempCoordinatesXY = ({ newIndex }: CoordinateData) => {
+  const setTempCoordinatesXY = ({ newIndex }: NumberData) => {
     // Find the indexes that need to be updated based on the from and to indexes
     const indexesToUpdate = range(newIndex, currentIndexPosition.current);
     // Check the direction we need to shift the indexes
@@ -92,7 +92,7 @@ function useCoordinates({
     }
   };
 
-  const setTempCoordinatesRowShift = ({ newIndex }: CoordinateData) => {
+  const setTempCoordinatesRowShift = ({ newIndex }: NumberData) => {
     const newOrder = swap(order, currentIndexPosition.current, newIndex);
     const { rowHeightDiff } = getRowHeightDiff(newOrder);
 
@@ -111,7 +111,7 @@ function useCoordinates({
     }
   };
 
-  const setTempCoordinates = ({ newIndex }: { newIndex: number }) => {
+  const setTempCoordinates = ({ newIndex }: NumberData) => {
     // Reset the staged coordinates
     tempCoordinates.current = [...Array(order.length)].map(() => ({
       x: 0,
@@ -123,10 +123,10 @@ function useCoordinates({
       setTempCoordinatesRowShift({ newIndex });
   };
 
-  const calculateNewCol = ({ mx }: CoordinateData) =>
+  const calculateNewCol = ({ mx }: NumberData) =>
     Math.abs(clamp(Math.round(mx / colWidth + curCol.current), 0, maxCols - 1));
 
-  const calculateNewRow = ({ originalIndex, my }: CoordinateData) => {
+  const calculateNewRow = ({ originalIndex, my }: NumberData) => {
     // Position of the top of the index being moved relative to the top
     const yOffset = rowOffsetTop[curRow.current] + my;
     // The trigger point is halfway of the height of the current index
@@ -143,7 +143,7 @@ function useCoordinates({
     return maxRows - 1;
   };
 
-  const calculateNewIndex = ({ originalIndex, mx, my }: CoordinateData) => {
+  const calculateNewIndex = ({ originalIndex, mx, my }: NumberData) => {
     newCol.current = calculateNewCol({ mx });
     newRow.current = calculateNewRow({ originalIndex, my });
     return clamp(

@@ -25,7 +25,7 @@ function App() {
   // Keeps track of the index we are at and check if switch into a new index
   const thisIndex = useRef(0);
   // Reference to obtain necessary grid measurements
-  const containerRef = useRef<HTMLDivElement>(null);
+  const draggableRef = useRef<HTMLUListElement>(null);
   // Element used to set boundary on useDrag gesture
   const boundsRef = useRef<HTMLDivElement>(null);
 
@@ -47,7 +47,7 @@ function App() {
   } = useCoordinates({
     order,
     orderByKey,
-    containerRef,
+    draggableRef,
     windowSize,
   });
 
@@ -142,7 +142,7 @@ function App() {
       <div className="parent" ref={boundsRef}>
         <button onClick={toggleMirror}>Enable Mirror</button>
         <button onClick={toggleRender}>Rerender</button>
-        <ul className="draggable" ref={containerRef}>
+        <ul className="draggable" ref={draggableRef}>
           {drag.map(({ x, y, opacity, zIndex, shadow }, i) => (
             <a.li
               {...bind(i)}

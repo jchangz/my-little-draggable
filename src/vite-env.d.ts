@@ -5,24 +5,25 @@ import React from "react";
 export {};
 
 export declare global {
+  interface CoordinateData {
+    x: number;
+    y: number;
+  }
+  interface NumberData {
+    [id: string]: number;
+  }
   interface GridData {
-    containerRef: React.RefObject<HTMLDivElement>;
     order: number[];
     orderByKey: number[];
+    draggableRef: React.RefObject<HTMLUListElement>;
     maxCols: number;
     maxRows: number;
     windowSize: number;
   }
-  interface RowData {
-    [id: number]: number[];
-  }
-  interface CoordinateData {
-    [id: string]: number;
-  }
-  interface CalculationsData {
+  interface DraggableData {
     order: number[];
     orderByKey: number[];
-    containerRef: React.RefObject<HTMLDivElement>;
+    draggableRef: React.RefObject<HTMLUListElement>;
     windowSize: number;
   }
 }

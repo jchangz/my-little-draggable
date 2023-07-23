@@ -2,9 +2,9 @@ import { useState, useEffect } from "react";
 import { range } from "lodash";
 
 function useGridProps({
-  containerRef,
   order,
   orderByKey,
+  draggableRef,
   maxCols,
   maxRows,
   windowSize,
@@ -43,8 +43,8 @@ function useGridProps({
     );
 
   useEffect(() => {
-    if (containerRef.current) {
-      const itemArr = containerRef.current.children;
+    if (draggableRef.current) {
+      const itemArr = draggableRef.current.children;
       const heightArr: number[] = [];
 
       if (itemArr.length < 1) return;
@@ -64,11 +64,11 @@ function useGridProps({
 
         heightArr.push(height);
       });
-      setOffsetTop(containerRef.current.offsetTop);
+      setOffsetTop(draggableRef.current.offsetTop);
       setRowHeights(heightArr);
     }
     // This only needs to run when window size changes or we toggle re-render
-  }, [windowSize, orderByKey, maxCols, maxRows, containerRef]);
+  }, [windowSize, orderByKey, maxCols, maxRows, draggableRef]);
 
   // Check the difference in row heights between the original and new order
   // The difference is used to translate the row position
