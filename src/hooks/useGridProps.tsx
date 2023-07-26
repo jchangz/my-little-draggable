@@ -42,6 +42,12 @@ function useGridProps({
       [offsetTop]
     );
 
+  // Set the minimum height on the bounds container based on sum of max heights
+  document.documentElement.style.setProperty(
+    "--min-height",
+    curMaxHeightPerRow.reduce((a, b) => a + b) + offsetTop + "px"
+  );
+
   useEffect(() => {
     if (draggableRef.current) {
       const itemArr = draggableRef.current.children;

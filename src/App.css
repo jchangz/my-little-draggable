@@ -1,5 +1,6 @@
 .parent {
-  min-height: 100vh;
+  height: 100vh;
+  min-height: var(--min-height);
 }
 .parent .drag-1 {
   aspect-ratio: 1/2;
