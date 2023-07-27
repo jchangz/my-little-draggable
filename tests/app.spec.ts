@@ -41,3 +41,39 @@ test("switch rows", async ({ page }) => {
   await expect(drag6).toHaveCSS("transform", "none");
   await expect(drag7).toHaveCSS("transform", "none");
 });
+
+test("check re-render", async ({ page }) => {
+  await page.goto("./");
+  const drag0 = page.locator("li.drag-0");
+  const drag8 = page.locator("li.drag-8");
+
+  await page.evaluate(() => window.scrollTo(0, 300));
+  await drag0.dragTo(drag8);
+  await page.getByRole("button", { name: "Rerender" }).click();
+
+  await expect(drag0).toHaveCSS("transform", "none");
+  await expect(drag8).toHaveCSS("transform", "none");
+});
+
+test("check mirror", async ({ page }) => {
+  await page.goto("./");
+  const drag0 = page.locator("li.drag-0");
+  const mirror = page.locator(".draggable-mirror");
+  const box = (await drag0.boundingBox()) || {
+    x: 0,
+    y: 0,
+    width: 0,
+    height: 0,
+  };
+
+  await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+  await page.mouse.down();
+  await expect(mirror).toBeVisible();
+  await page.mouse.up();
+
+  await page.getByRole("button", { name: "Enable Mirror" }).click();
+
+  await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+  await page.mouse.down();
+  await expect(mirror).not.toBeVisible();
+});
