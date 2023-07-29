@@ -1,0 +1,13 @@
+{
+	"name": "My Little Draggable",
+	"build": {
+		"dockerfile": "Dockerfile"
+	},
+	"customizations": {
+		"vscode": {
+			"extensions": [
+				"ms-playwright.playwright"
+			]
+		}
+	}
+}
