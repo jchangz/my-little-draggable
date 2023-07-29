@@ -33,6 +33,9 @@
   width: calc(100% - 1em);
   height: calc(100% - 1em);
 }
+.draggable li:hover{
+  cursor: grab
+}
 
 .draggable-mirror {
   position: absolute;

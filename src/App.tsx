@@ -103,6 +103,7 @@ function App() {
         dragApi.start(animateWithoutClone({ originalIndex, down, mx, my }));
       }
 
+      // On drag finish, if we are in a new index, set new coordinates and reset temp coordinates
       if (!active && getCurrentIndexPosition() !== newIndex) {
         const stagingCoordinates = newCoordinates;
         for (let i = 0, j = order.length; i < j; i += 1) {
@@ -114,8 +115,9 @@ function App() {
         setNewCoordinates(stagingCoordinates);
 
         const currentIndexPosition = getCurrentIndexPosition();
+        // Update new order of items
         setOrder(swap(order, currentIndexPosition, newIndex));
-        // Store current order for re-rendering
+        // Store new order for re-rendering
         setTempOrder({ currentIndexPosition, newIndex });
       }
 
